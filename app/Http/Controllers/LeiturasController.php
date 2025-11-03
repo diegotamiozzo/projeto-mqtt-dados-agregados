@@ -10,13 +10,12 @@ class LeiturasController extends Controller
 {
     public function index()
     {
-        // ALTERAÇÃO CRÍTICA: Mudando de 'sensor_leituras_agregado' para a tabela correta 'dados_agregados'
         $leituras = DB::table('dados_agregados')
             ->orderByDesc('periodo_inicio')
-            ->limit(24)
+            ->limit(120)
             ->get();
 
-        return view('leituras.index', compact('leituras'));
+        return view('leituras.index', ['leituras' => $leituras, 'totalLeituras' => $leituras->count()]);
     }
 
     public function agregar(Request $request)

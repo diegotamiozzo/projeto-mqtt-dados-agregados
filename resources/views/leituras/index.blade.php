@@ -20,7 +20,11 @@
 <body>
 <div class="container-fluid mt-4">
     <h1 class="mb-4">Monitoramento de Equipamentos</h1>
-    <p class="text-muted">Exibindo as últimas 24 agregações de dados.</p>
+    @if($totalLeituras > 0)
+        <p class="text-muted">Exibindo as últimas {{ $totalLeituras }} agregações de dados.</p>
+    @else
+        <p class="text-muted">Nenhum dado para exibir. Clique em "Atualizar" para processar.</p>
+    @endif
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>

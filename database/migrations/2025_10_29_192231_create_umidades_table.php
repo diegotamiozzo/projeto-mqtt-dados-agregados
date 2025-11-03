@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('id_cliente')->collation('utf8mb4_unicode_ci');
             $table->string('id_equipamento')->collation('utf8mb4_unicode_ci');
             $table->decimal('umidade', 10, 2);
+            $table->boolean('agregado')->default(false);
             $table->timestamp('timestamp')->useCurrent();
             $table->index(['id_cliente', 'id_equipamento', 'timestamp']);
         });

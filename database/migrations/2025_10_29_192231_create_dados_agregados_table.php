@@ -6,8 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
+        // NOTA: Os campos de dados e índices estão baseados no seu DDL e no index.blade.php.
+        // A chave UNIQUE KEY foi adicionada para o ON DUPLICATE KEY UPDATE.
         Schema::create('dados_agregados', function (Blueprint $table) {
             $table->id();
 
@@ -49,47 +54,55 @@ return new class extends Migration
             $table->decimal('umidade_min', 10, 2)->nullable();
             $table->decimal('umidade_ultima', 10, 2)->nullable();
 
-            // Grandezas elétricas
+            // Grandezas elétricas - Tensão R
             $table->decimal('tensao_r_media', 10, 2)->nullable();
             $table->decimal('tensao_r_max', 10, 2)->nullable();
             $table->decimal('tensao_r_min', 10, 2)->nullable();
             $table->decimal('tensao_r_ultima', 10, 2)->nullable();
 
+            // Grandezas elétricas - Tensão S
             $table->decimal('tensao_s_media', 10, 2)->nullable();
             $table->decimal('tensao_s_max', 10, 2)->nullable();
             $table->decimal('tensao_s_min', 10, 2)->nullable();
             $table->decimal('tensao_s_ultima', 10, 2)->nullable();
 
+            // Grandezas elétricas - Tensão T
             $table->decimal('tensao_t_media', 10, 2)->nullable();
             $table->decimal('tensao_t_max', 10, 2)->nullable();
             $table->decimal('tensao_t_min', 10, 2)->nullable();
             $table->decimal('tensao_t_ultima', 10, 2)->nullable();
 
+            // Grandezas elétricas - Corrente R
             $table->decimal('corrente_r_media', 10, 2)->nullable();
             $table->decimal('corrente_r_max', 10, 2)->nullable();
             $table->decimal('corrente_r_min', 10, 2)->nullable();
             $table->decimal('corrente_r_ultima', 10, 2)->nullable();
 
+            // Grandezas elétricas - Corrente S
             $table->decimal('corrente_s_media', 10, 2)->nullable();
             $table->decimal('corrente_s_max', 10, 2)->nullable();
             $table->decimal('corrente_s_min', 10, 2)->nullable();
             $table->decimal('corrente_s_ultima', 10, 2)->nullable();
 
+            // Grandezas elétricas - Corrente T
             $table->decimal('corrente_t_media', 10, 2)->nullable();
             $table->decimal('corrente_t_max', 10, 2)->nullable();
             $table->decimal('corrente_t_min', 10, 2)->nullable();
             $table->decimal('corrente_t_ultima', 10, 2)->nullable();
 
+            // Grandezas elétricas - Potência Ativa (kW)
             $table->decimal('potencia_ativa_media', 10, 2)->nullable();
             $table->decimal('potencia_ativa_max', 10, 2)->nullable();
             $table->decimal('potencia_ativa_min', 10, 2)->nullable();
             $table->decimal('potencia_ativa_ultima', 10, 2)->nullable();
 
+            // Grandezas elétricas - Potência Reativa (kVAr)
             $table->decimal('potencia_reativa_media', 10, 2)->nullable();
             $table->decimal('potencia_reativa_max', 10, 2)->nullable();
             $table->decimal('potencia_reativa_min', 10, 2)->nullable();
             $table->decimal('potencia_reativa_ultima', 10, 2)->nullable();
 
+            // Grandezas elétricas - Fator de Potência (FP)
             $table->decimal('fator_potencia_media', 10, 4)->nullable();
             $table->decimal('fator_potencia_max', 10, 4)->nullable();
             $table->decimal('fator_potencia_min', 10, 4)->nullable();
@@ -101,14 +114,20 @@ return new class extends Migration
             // Timestamps Laravel
             $table->timestamps();
 
-            // Índices para acelerar consultas
+            // --- CHAVE ÚNICA ESSENCIAL PARA O 'ON DUPLICATE KEY UPDATE' ---
+            // Garante que só haja uma linha para um equipamento/cliente/período.
+            $table->unique(['id_cliente', 'id_equipamento', 'periodo_inicio'], 'unique_agregacao');
+
+            // Índices para acelerar consultas (mantidos os seus índices de consulta)
             $table->index('id_cliente');
             $table->index('id_equipamento');
-            $table->index('periodo_inicio');
             $table->index('periodo_fim');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('dados_agregados');
