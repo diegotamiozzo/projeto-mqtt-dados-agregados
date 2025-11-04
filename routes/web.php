@@ -6,3 +6,4 @@ use App\Http\Controllers\LeiturasController;
 
 Route::get('/', [LeiturasController::class, 'index'])->name('leituras.index');
 Route::post('/agregar-leituras', [LeiturasController::class, 'agregar'])->name('leituras.agregar');
+Route::get('/exportar-leituras', [LeiturasController::class, 'exportar'])->name('leituras.exportar');

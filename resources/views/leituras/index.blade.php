@@ -20,23 +20,62 @@
 </head>
 <body>
 <div class="container-fluid mt-4">
-    <h1 class="mb-4">Monitoramento de Equipamentos</h1>
+    <div class="d-flex align-items-center mb-4">
+        <img src="{{ asset('images/logo.png') }}" alt="Logo da Empresa" style="height: 60px; margin-right: 15px;">
+        <h1 class="mb-0">Monitoramento de Equipamentos</h1>
+    </div>
     @if($totalLeituras > 0)
-        <p class="text-muted">Exibindo as últimas {{ $totalLeituras }} agregações de dados.</p>
+        <p class="text-muted">Exibindo as últimas {{ $totalLeituras }} horas de dados.</p>
     @else
         <p class="text-muted">Nenhum dado para exibir. Clique em "Atualizar" para processar.</p>
     @endif
 
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success" id="success-alert">{{ session('success') }}</div>
     @endif
 
-        <form action="{{ route('leituras.agregar') }}" method="POST" class="mb-4 d-inline">
-            @csrf
-            <button type="submit" class="btn btn-primary">
-                Atualizar 
-            </button>
-        </form>
+    <form method="GET" action="{{ route('leituras.index') }}" class="mb-4 p-3 border rounded bg-light">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label for="id_cliente" class="form-label">Cliente</label>
+                <select name="id_cliente" id="id_cliente" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach($clientes as $cliente)
+                        <option value="{{ $cliente }}" {{ ($filters['id_cliente'] ?? '') == $cliente ? 'selected' : '' }}>{{ $cliente }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="id_equipamento" class="form-label">Equipamento</label>
+                <select name="id_equipamento" id="id_equipamento" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach($equipamentos as $equipamento)
+                        <option value="{{ $equipamento }}" {{ ($filters['id_equipamento'] ?? '') == $equipamento ? 'selected' : '' }}>{{ $equipamento }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="data_inicio" class="form-label">Data Início</label>
+                <input type="date" name="data_inicio" id="data_inicio" class="form-control" value="{{ $filters['data_inicio'] ?? '' }}">
+            </div>
+            <div class="col-md-2">
+                <label for="data_fim" class="form-label">Data Fim</label>
+                <input type="date" name="data_fim" id="data_fim" class="form-control" value="{{ $filters['data_fim'] ?? '' }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-info">Filtrar</button>
+                <a href="{{ route('leituras.index') }}" class="btn btn-secondary">Limpar Filtros</a>
+            </div>
+        </div>
+    </form>
+
+        <div class="mb-3">
+            <form action="{{ route('leituras.agregar') }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-primary">Atualizar</button>
+            </form>
+            <a href="{{ route('leituras.exportar', request()->query()) }}" class="btn btn-success">Exportar Dados Filtrados</a>
+        </div>
 
 
     <div class="table-responsive">
@@ -225,7 +264,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="44" class="text-center">Nenhum dado agregado encontrado. Clique em "Atualizar" para processar novos dados.</td>
+                        <td colspan="60" class="text-center">Nenhum dado agregado encontrado para os filtros aplicados.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -233,5 +272,14 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Aguarda 3 segundos e depois remove a mensagem de sucesso
+    setTimeout(function() {
+        let alert = document.getElementById('success-alert');
+        if (alert) {
+            alert.style.display = 'none';
+        }
+    }, 3000); // 3000 milissegundos = 3 segundos
+</script>
 </body>
 </html>
