@@ -23,7 +23,6 @@ class LeiturasController extends Controller
             $query->where('periodo_inicio', '>=', $request->data_inicio);
         }
         if ($request->filled('data_fim')) {
-            // Adiciona a hora final para incluir todo o dia
             $query->where('periodo_inicio', '<=', $request->data_fim . ' 23:59:59');
         }
 
@@ -36,19 +35,57 @@ class LeiturasController extends Controller
         // Busca o timestamp da última agregação bem-sucedida
         $ultimaAtualizacao = DB::table('dados_agregados')->max('updated_at');
 
+        // Detecta quais colunas têm dados para otimizar a exibição
+        $colunasVisiveis = $this->detectarColunasVisiveis($leituras);
+
         return view('leituras.index', [
             'leituras' => $leituras,
             'totalLeituras' => $leituras->count(),
             'clientes' => $clientes,
             'equipamentos' => $equipamentos,
-            'filters' => $request->all(), // Envia os filtros aplicados de volta para a view
-            'ultimaAtualizacao' => $ultimaAtualizacao
+            'filters' => $request->all(),
+            'ultimaAtualizacao' => $ultimaAtualizacao,
+            'colunasVisiveis' => $colunasVisiveis
         ]);
+    }
+
+    private function detectarColunasVisiveis($leituras)
+    {
+        $colunas = [
+            'brunidores' => false,
+            'descascadores' => false,
+            'polidores' => false,
+            'temperatura' => false,
+            'umidade' => false,
+            'grandezas_eletricas' => false
+        ];
+
+        foreach ($leituras as $leitura) {
+            if (!is_null($leitura->corrente_brunidores_media)) {
+                $colunas['brunidores'] = true;
+            }
+            if (!is_null($leitura->corrente_descascadores_media)) {
+                $colunas['descascadores'] = true;
+            }
+            if (!is_null($leitura->corrente_polidores_media)) {
+                $colunas['polidores'] = true;
+            }
+            if (!is_null($leitura->temperatura_media)) {
+                $colunas['temperatura'] = true;
+            }
+            if (!is_null($leitura->umidade_media)) {
+                $colunas['umidade'] = true;
+            }
+            if (!is_null($leitura->tensao_r_media)) {
+                $colunas['grandezas_eletricas'] = true;
+            }
+        }
+
+        return $colunas;
     }
 
     public function agregar(Request $request)
     {
-        // Chamada do comando Artisan permanece correta, usando o comando que criamos
         Artisan::call('leituras:agregar', [
             '--periodo' => 'hora'
         ]);
@@ -61,7 +98,6 @@ class LeiturasController extends Controller
     {
         $query = DB::table('dados_agregados');
 
-        // Aplica os mesmos filtros da index na exportação
         if ($request->filled('id_cliente')) {
             $query->where('id_cliente', $request->id_cliente);
         }
@@ -74,6 +110,7 @@ class LeiturasController extends Controller
         if ($request->filled('data_fim')) {
             $query->where('periodo_inicio', '<=', $request->data_fim . ' 23:59:59');
         }
+        
         $leituras = $query->orderBy('periodo_inicio')->get();
         $nomeArquivo = 'dados_agregados_' . date('Y-m-d_H-i-s') . '.csv';
 
@@ -85,17 +122,14 @@ class LeiturasController extends Controller
         $callback = function () use ($leituras) {
             $file = fopen('php://output', 'w');
             
-            // Adiciona o BOM para garantir a codificação correta no Excel
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            // Pega os nomes das colunas da primeira linha de dados, se houver
             if ($leituras->isNotEmpty()) {
                 $primeiraLeitura = (array) $leituras->first();
                 $colunas = array_keys($primeiraLeitura);
                 fputcsv($file, $colunas, ';');
             }
 
-            // Adiciona os dados
             foreach ($leituras as $leitura) {
                 fputcsv($file, (array) $leitura, ';');
             }

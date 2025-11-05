@@ -1,16 +1,14 @@
 {{-- resources/views/components/leituras/table.blade.php --}}
-@props(['leituras'])
+@props(['leituras', 'colunasVisiveis'])
 
 <div class="table-responsive">
     <table class="table table-bordered table-striped align-middle table-sm">
         
-        {{-- O cabeçalho complexo foi movido para seu próprio componente --}}
-        <x-leituras.table-header />
+        <x-leituras.table-header :colunasVisiveis="$colunasVisiveis" />
 
         <tbody class="text-center">
             @forelse($leituras as $leitura)
-                {{-- Cada linha da tabela agora é seu próprio componente --}}
-                <x-leituras.table-row :leitura="$leitura" />
+                <x-leituras.table-row :leitura="$leitura" :colunasVisiveis="$colunasVisiveis" />
             @empty
                 <tr>
                     <td colspan="60" class="text-center">Nenhum dado agregado encontrado para os filtros aplicados.</td>
