@@ -30,6 +30,12 @@
         <p class="text-muted">Nenhum dado para exibir. Clique em "Atualizar" para processar.</p>
     @endif
 
+    @if($ultimaAtualizacao)
+        <p class="text-muted">
+            Última atualização: <strong>{{ \Carbon\Carbon::parse($ultimaAtualizacao)->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</strong>
+        </p>
+    @endif
+
     @if(session('success'))
         <div class="alert alert-success" id="success-alert">{{ session('success') }}</div>
     @endif
@@ -186,8 +192,8 @@
                     <tr>
                         <td>{{ $l->id_cliente }}</td>
                         <td>{{ $l->id_equipamento }}</td>
-                        <td>{{ \Carbon\Carbon::parse($l->periodo_inicio)->format('d/m H:i') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($l->periodo_fim)->format('d/m H:i') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($l->periodo_inicio)->timezone('America/Sao_Paulo')->format('d/m H:i') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($l->periodo_fim)->timezone('America/Sao_Paulo')->format('d/m H:i') }}</td>
                         <td>{{ $l->registros_contagem }}</td>
                         
                         <td>{{ number_format($l->corrente_brunidores_media, 2) }}A</td>
@@ -260,7 +266,7 @@
                         <td>{{ number_format($l->fator_potencia_min, 4) }}</td>
                         <td>{{ number_format($l->fator_potencia_ultima, 4) }}</td>
 
-                        <td>{{ \Carbon\Carbon::parse($l->updated_at)->format('d/m H:i:s') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($l->updated_at)->timezone('America/Sao_Paulo')->format('d/m H:i:s') }}</td>
                     </tr>
                 @empty
                     <tr>

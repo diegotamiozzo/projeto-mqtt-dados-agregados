@@ -33,12 +33,16 @@ class LeiturasController extends Controller
         $clientes = DB::table('dados_agregados')->distinct()->orderBy('id_cliente')->pluck('id_cliente');
         $equipamentos = DB::table('dados_agregados')->distinct()->orderBy('id_equipamento')->pluck('id_equipamento');
 
+        // Busca o timestamp da última agregação bem-sucedida
+        $ultimaAtualizacao = DB::table('dados_agregados')->max('updated_at');
+
         return view('leituras.index', [
             'leituras' => $leituras,
             'totalLeituras' => $leituras->count(),
             'clientes' => $clientes,
             'equipamentos' => $equipamentos,
-            'filters' => $request->all() // Envia os filtros aplicados de volta para a view
+            'filters' => $request->all(), // Envia os filtros aplicados de volta para a view
+            'ultimaAtualizacao' => $ultimaAtualizacao
         ]);
     }
 
