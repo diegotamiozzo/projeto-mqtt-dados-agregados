@@ -1,4 +1,3 @@
-{{-- resources/views/components/leituras/actions.blade.php --}}
 <div class="mb-3">
     <form id="form-agregar" action="{{ route('leituras.agregar') }}" method="POST" class="d-inline">
         @csrf

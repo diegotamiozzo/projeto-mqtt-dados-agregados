@@ -1,4 +1,3 @@
-{{-- resources/views/components/leituras/filters.blade.php --}}
 @props(['clientes', 'equipamentos', 'filters'])
 
 <form method="GET" action="{{ route('leituras.index') }}" class="mb-4 p-3 border rounded bg-light">

@@ -1,4 +1,3 @@
-{{-- resources/views/leituras/index.blade.php --}}
 <x-layout title="Monitoramento de Equipamentos">
     <div class="container-fluid mt-4">
 

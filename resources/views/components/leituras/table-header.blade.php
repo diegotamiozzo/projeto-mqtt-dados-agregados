@@ -1,4 +1,3 @@
-{{-- resources/views/components/leituras/table-header.blade.php --}}
 @props(['colunasVisiveis'])
 
 <thead class="table-dark text-center">

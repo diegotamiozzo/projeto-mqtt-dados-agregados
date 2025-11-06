@@ -1,4 +1,3 @@
-{{-- resources/views/components/leituras/table-row.blade.php --}}
 @props(['leitura', 'colunasVisiveis'])
 
 @php
