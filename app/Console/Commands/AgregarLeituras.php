@@ -42,28 +42,50 @@ class AgregarLeituras extends Command
         }
     }
 
-    private function getFormatoSQL($periodo): string
+    private function getDriver(): string
     {
-        return match($periodo) {
-            'hora' => '%Y-%m-%d %H:00:00',
-            'dia' => '%Y-%m-%d 00:00:00',
-        };
+        return DB::connection()->getDriverName();
     }
 
-    private function getIntervalo($periodo): string
+    private function dateFormat($campo, $periodo): string
     {
-        return match($periodo) {
+        $driver = $this->getDriver();
+
+        if ($driver === 'mysql') {
+            $formato = match($periodo) {
+                'hora' => '%Y-%m-%d %H:00:00',
+                'dia' => '%Y-%m-%d 00:00:00',
+            };
+            return "DATE_FORMAT({$campo}, '{$formato}')";
+        } else {
+            $formato = match($periodo) {
+                'hora' => 'YYYY-MM-DD HH24:00:00',
+                'dia' => 'YYYY-MM-DD 00:00:00',
+            };
+            return "TO_CHAR({$campo}, '{$formato}')";
+        }
+    }
+
+    private function dateAdd($campo, $periodo): string
+    {
+        $driver = $this->getDriver();
+        $intervalo = match($periodo) {
             'hora' => '1 HOUR',
             'dia' => '1 DAY',
         };
+
+        if ($driver === 'mysql') {
+            return "DATE_ADD({$campo}, INTERVAL {$intervalo})";
+        } else {
+            return "({$campo} + INTERVAL '{$intervalo}')";
+        }
     }
 
     private function agregarCorrentes(string $periodo): void
     {
         $this->info("\n[1/5] Agregando correntes...");
 
-        $formato = $this->getFormatoSQL($periodo);
-        $intervalo = $this->getIntervalo($periodo);
+        $dateFormatExpr = $this->dateFormat('timestamp', $periodo);
 
         $tiposCorrentes = [
             ['tabela' => 'corrente_brunidores', 'prefixo' => 'brunidores'],
@@ -79,7 +101,7 @@ class AgregarLeituras extends Command
                 SELECT
                     id_cliente,
                     id_equipamento,
-                    DATE_FORMAT(timestamp, '{$formato}') AS periodo_inicio,
+                    {$dateFormatExpr} AS periodo_inicio,
                     AVG(corrente) AS corrente_media,
                     MAX(corrente) AS corrente_max,
                     MIN(corrente) AS corrente_min,
@@ -96,13 +118,14 @@ class AgregarLeituras extends Command
                     WHERE id_cliente = ?
                       AND id_equipamento = ?
                       AND agregado = 0
-                      AND DATE_FORMAT(timestamp, '{$formato}') = ?
+                      AND {$dateFormatExpr} = ?
                     ORDER BY timestamp DESC
                     LIMIT 1
                 ", [$dado->id_cliente, $dado->id_equipamento, $dado->periodo_inicio]);
 
+                $dateAddExpr = $this->dateAdd('?', $periodo);
                 $periodoFim = DB::selectOne("
-                    SELECT DATE_ADD(?, INTERVAL {$intervalo}) AS periodo_fim
+                    SELECT {$dateAddExpr} AS periodo_fim
                 ", [$dado->periodo_inicio])->periodo_fim;
 
                 $existente = DB::table('dados_agregados')
@@ -145,14 +168,13 @@ class AgregarLeituras extends Command
     {
         $this->info("\n[2/5] Agregando temperatura...");
 
-        $formato = $this->getFormatoSQL($periodo);
-        $intervalo = $this->getIntervalo($periodo);
+        $dateFormatExpr = $this->dateFormat('timestamp', $periodo);
 
         $dados = DB::select("
             SELECT
                 id_cliente,
                 id_equipamento,
-                DATE_FORMAT(timestamp, '{$formato}') AS periodo_inicio,
+                {$dateFormatExpr} AS periodo_inicio,
                 AVG(temperatura) AS temperatura_media,
                 MAX(temperatura) AS temperatura_max,
                 MIN(temperatura) AS temperatura_min,
@@ -169,13 +191,14 @@ class AgregarLeituras extends Command
                 WHERE id_cliente = ?
                   AND id_equipamento = ?
                   AND agregado = 0
-                  AND DATE_FORMAT(timestamp, '{$formato}') = ?
+                  AND {$dateFormatExpr} = ?
                 ORDER BY timestamp DESC
                 LIMIT 1
             ", [$dado->id_cliente, $dado->id_equipamento, $dado->periodo_inicio]);
 
+            $dateAddExpr = $this->dateAdd('?', $periodo);
             $periodoFim = DB::selectOne("
-                SELECT DATE_ADD(?, INTERVAL {$intervalo}) AS periodo_fim
+                SELECT {$dateAddExpr} AS periodo_fim
             ", [$dado->periodo_inicio])->periodo_fim;
 
             $existente = DB::table('dados_agregados')
@@ -217,14 +240,13 @@ class AgregarLeituras extends Command
     {
         $this->info("\n[3/5] Agregando umidade...");
 
-        $formato = $this->getFormatoSQL($periodo);
-        $intervalo = $this->getIntervalo($periodo);
+        $dateFormatExpr = $this->dateFormat('timestamp', $periodo);
 
         $dados = DB::select("
             SELECT
                 id_cliente,
                 id_equipamento,
-                DATE_FORMAT(timestamp, '{$formato}') AS periodo_inicio,
+                {$dateFormatExpr} AS periodo_inicio,
                 AVG(umidade) AS umidade_media,
                 MAX(umidade) AS umidade_max,
                 MIN(umidade) AS umidade_min,
@@ -241,13 +263,14 @@ class AgregarLeituras extends Command
                 WHERE id_cliente = ?
                   AND id_equipamento = ?
                   AND agregado = 0
-                  AND DATE_FORMAT(timestamp, '{$formato}') = ?
+                  AND {$dateFormatExpr} = ?
                 ORDER BY timestamp DESC
                 LIMIT 1
             ", [$dado->id_cliente, $dado->id_equipamento, $dado->periodo_inicio]);
 
+            $dateAddExpr = $this->dateAdd('?', $periodo);
             $periodoFim = DB::selectOne("
-                SELECT DATE_ADD(?, INTERVAL {$intervalo}) AS periodo_fim
+                SELECT {$dateAddExpr} AS periodo_fim
             ", [$dado->periodo_inicio])->periodo_fim;
 
             $existente = DB::table('dados_agregados')
@@ -289,14 +312,13 @@ class AgregarLeituras extends Command
     {
         $this->info("\n[4/5] Agregando grandezas elétricas...");
 
-        $formato = $this->getFormatoSQL($periodo);
-        $intervalo = $this->getIntervalo($periodo);
+        $dateFormatExpr = $this->dateFormat('timestamp', $periodo);
 
         $dados = DB::select("
             SELECT
                 id_cliente,
                 id_equipamento,
-                DATE_FORMAT(timestamp, '{$formato}') AS periodo_inicio,
+                {$dateFormatExpr} AS periodo_inicio,
                 AVG(tensao_r) AS tensao_r_media,
                 MAX(tensao_r) AS tensao_r_max,
                 MIN(tensao_r) AS tensao_r_min,
@@ -331,6 +353,7 @@ class AgregarLeituras extends Command
         ");
 
         foreach ($dados as $dado) {
+            $dateFormatExpr = $this->dateFormat('timestamp', $periodo);
             $ultimaLeitura = DB::selectOne("
                 SELECT tensao_r, tensao_s, tensao_t,
                        corrente_r, corrente_s, corrente_t,
@@ -339,13 +362,14 @@ class AgregarLeituras extends Command
                 WHERE id_cliente = ?
                   AND id_equipamento = ?
                   AND agregado = 0
-                  AND DATE_FORMAT(timestamp, '{$formato}') = ?
+                  AND {$dateFormatExpr} = ?
                 ORDER BY timestamp DESC
                 LIMIT 1
             ", [$dado->id_cliente, $dado->id_equipamento, $dado->periodo_inicio]);
 
+            $dateAddExpr = $this->dateAdd('?', $periodo);
             $periodoFim = DB::selectOne("
-                SELECT DATE_ADD(?, INTERVAL {$intervalo}) AS periodo_fim
+                SELECT {$dateAddExpr} AS periodo_fim
             ", [$dado->periodo_inicio])->periodo_fim;
 
             $existente = DB::table('dados_agregados')
