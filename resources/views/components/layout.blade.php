@@ -1,4 +1,5 @@
-@props(['title' => 'Monitoramento'])<!DOCTYPE html>
+@props(['title' => 'Monitoramento'])
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
