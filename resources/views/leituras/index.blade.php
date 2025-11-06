@@ -38,28 +38,19 @@
         {{-- 3. COMPONENTE DE AÇÕES --}}
         <x-leituras.actions />
 
-        {{-- 4. COMPONENTE DA TABELA --}}
+        {{-- 4. COMPONENTE DE ESTATÍSTICAS E GRÁFICOS --}}
         @if(isset($filters['id_equipamento']) && !empty($filters['id_equipamento']))
             @if($leituras->isNotEmpty())
-                {{-- Badge informativo das colunas visíveis --}}
-                <div class="mb-3">
-                    <small class="text-muted">
-                        <strong>Colunas exibidas:</strong>
-                        @if($colunasVisiveis['brunidores']) <span class="badge bg-primary">Brunidores</span> @endif
-                        @if($colunasVisiveis['descascadores']) <span class="badge bg-info">Descascadores</span> @endif
-                        @if($colunasVisiveis['polidores']) <span class="badge bg-warning">Polidores</span> @endif
-                        @if($colunasVisiveis['temperatura']) <span class="badge bg-success">Temperatura</span> @endif
-                        @if($colunasVisiveis['umidade']) <span class="badge bg-danger">Umidade</span> @endif
-                        @if($colunasVisiveis['grandezas_eletricas']) <span class="badge bg-secondary">Grandezas Elétricas</span> @endif
-                    </small>
-                </div>
-                
-                <x-leituras.table :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
+                {{-- Estatísticas resumidas --}}
+                <x-leituras.stats :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
+
+                {{-- Gráficos interativos --}}
+                <x-leituras.charts :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
             @else
                 <p class="alert alert-warning">Nenhum dado encontrado para o equipamento selecionado e filtros aplicados.</p>
             @endif
         @else
-            <p class="alert alert-info">Selecione um equipamento para visualizar os dados na tabela.</p>
+            <p class="alert alert-info">Selecione um equipamento para visualizar os dados em gráficos.</p>
         @endif
 
     </div>
