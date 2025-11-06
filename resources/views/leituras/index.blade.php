@@ -15,8 +15,11 @@
         @endif
 
         @if($ultimaAtualizacao)
-            <p class="text-muted">
+            <p class="text-muted mb-1">
                 Última atualização: <strong>{{ \Carbon\Carbon::parse($ultimaAtualizacao)->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</strong>
+            </p>
+            <p class="text-muted">
+                Próxima atualização em: <strong id="countdown-timer" class="text-primary">60</strong> segundos
             </p>
         @endif
 

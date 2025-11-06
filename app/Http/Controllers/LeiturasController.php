@@ -101,7 +101,23 @@ class LeiturasController extends Controller
             '--periodo' => 'hora'
         ]);
 
-        return redirect()->route('leituras.index')
+        // Monta os parâmetros de query para manter os filtros
+        $queryParams = [];
+        
+        if ($request->filled('id_cliente')) {
+            $queryParams['id_cliente'] = $request->id_cliente;
+        }
+        if ($request->filled('id_equipamento')) {
+            $queryParams['id_equipamento'] = $request->id_equipamento;
+        }
+        if ($request->filled('data_inicio')) {
+            $queryParams['data_inicio'] = $request->data_inicio;
+        }
+        if ($request->filled('data_fim')) {
+            $queryParams['data_fim'] = $request->data_fim;
+        }
+
+        return redirect()->route('leituras.index', $queryParams)
             ->with('success', 'Agregação realizada com sucesso!');
     }
 
