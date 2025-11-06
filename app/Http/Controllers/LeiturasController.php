@@ -3,29 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Artisan;
+use Carbon\Carbon;
 
 class LeiturasController extends Controller
 {
     public function index(Request $request)
     {
         $query = DB::table('dados_agregados');
-
-        // Aplica filtros se existirem na requisição
-        if ($request->filled('id_cliente')) {
-            $query->where('id_cliente', $request->id_cliente);
-        }
-        if ($request->filled('id_equipamento')) {
-            $query->where('id_equipamento', $request->id_equipamento);
-        }
-        if ($request->filled('data_inicio')) {
-            $query->where('periodo_inicio', '>=', $request->data_inicio);
-        }
-        if ($request->filled('data_fim')) {
-            $query->where('periodo_inicio', '<=', $request->data_fim . ' 23:59:59');
-        }
-
+ 
+        // Aplica filtros com conversão de timezone
+        $this->applyFilters($query, $request);
+ 
         $leituras = $query->orderByDesc('periodo_inicio')->limit(120)->get();
 
         // Busca dados para preencher os filtros
@@ -47,6 +38,26 @@ class LeiturasController extends Controller
             'ultimaAtualizacao' => $ultimaAtualizacao,
             'colunasVisiveis' => $colunasVisiveis
         ]);
+    }
+
+    private function applyFilters(Builder $query, Request $request): void
+    {
+        if ($request->filled('id_cliente')) {
+            $query->where('id_cliente', $request->id_cliente);
+        }
+        if ($request->filled('id_equipamento')) {
+            $query->where('id_equipamento', $request->id_equipamento);
+        }
+        if ($request->filled('data_inicio')) {
+            // Converte a data de início para o início do dia em São Paulo e depois para UTC
+            $dataInicio = Carbon::parse($request->data_inicio, 'America/Sao_Paulo')->startOfDay()->utc();
+            $query->where('periodo_inicio', '>=', $dataInicio);
+        }
+        if ($request->filled('data_fim')) {
+            // Converte a data de fim para o final do dia em São Paulo e depois para UTC
+            $dataFim = Carbon::parse($request->data_fim, 'America/Sao_Paulo')->endOfDay()->utc();
+            $query->where('periodo_inicio', '<=', $dataFim);
+        }
     }
 
     private function detectarColunasVisiveis($leituras)
@@ -97,20 +108,10 @@ class LeiturasController extends Controller
     public function exportar(Request $request)
     {
         $query = DB::table('dados_agregados');
-
-        if ($request->filled('id_cliente')) {
-            $query->where('id_cliente', $request->id_cliente);
-        }
-        if ($request->filled('id_equipamento')) {
-            $query->where('id_equipamento', $request->id_equipamento);
-        }
-        if ($request->filled('data_inicio')) {
-            $query->where('periodo_inicio', '>=', $request->data_inicio);
-        }
-        if ($request->filled('data_fim')) {
-            $query->where('periodo_inicio', '<=', $request->data_fim . ' 23:59:59');
-        }
         
+        // Reutiliza a lógica de filtros com conversão de timezone
+        $this->applyFilters($query, $request);
+
         $leituras = $query->orderBy('periodo_inicio')->get();
         $nomeArquivo = 'dados_agregados_' . date('Y-m-d_H-i-s') . '.csv';
 
