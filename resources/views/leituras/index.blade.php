@@ -6,9 +6,8 @@
             <!-- Sidebar Header -->
             <div class="bg-gradient-to-br from-primary-600 to-primary-700 text-white p-2">
                 <div class="flex items-center justify-between">
-                     <div>
-                         <img src="{{ asset('images/logo-branco.png') }}" alt="Logo" class="h-12 w-auto mb-4 block mx-auto">
-                     </div>
+                    <!-- Imagem logo -->
+                    <img src="{{ asset('images/logo-branco.png') }}" alt="Logo" class="h-12 w-12 mb-4 block mx-auto">
                     <button onclick="toggleSidebar()" class="lg:hidden text-white hover:bg-primary-500 p-2 rounded-lg transition-smooth">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -16,20 +15,15 @@
                     </button>
                 </div>
             </div>
-
             <!-- Sidebar Content -->
             <div class="flex-1 overflow-y-auto p-6 space-y-6">
                 <!-- Filtros -->
-                <x-leituras.filters
-                    :clientes="$clientes"
-                    :equipamentos="$equipamentos"
-                    :filters="$filters"
-                />
-
+                <x-leituras.filters :clientes="$clientes" :equipamentos="$equipamentos" :filters="$filters" />
                 <!-- Ações -->
                 <x-leituras.actions />
             </div>
         </aside>
+
 
         <!-- Overlay for mobile -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-neutral-900 bg-opacity-50 z-40 lg:hidden opacity-0 invisible transition-all duration-300"></div>
