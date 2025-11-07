@@ -28,11 +28,11 @@
         }
         .chart-wrapper {
             position: relative;
-            height: 400px;
+            height: 500px;
         }
         @media (max-width: 768px) {
             .chart-wrapper {
-                height: 300px;
+                height: 350px;
             }
         }
         .chart-header {
@@ -71,6 +71,105 @@
             color: #6c757d;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+        .floating-panel {
+            position: fixed;
+            top: 80px;
+            right: -400px;
+            width: 380px;
+            max-height: calc(100vh - 100px);
+            background: white;
+            border-radius: 12px 0 0 12px;
+            box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .floating-panel.active {
+            right: 0;
+        }
+        .floating-panel-content {
+            padding: 20px;
+        }
+        .toggle-panel-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .toggle-panel-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        .stats-overlay {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 999;
+            max-height: 150px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .stats-overlay.collapsed {
+            max-height: 0;
+            padding: 0;
+        }
+        .stats-overlay .stats-scroll {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 10px;
+        }
+        .stats-overlay .stats-card {
+            min-width: 200px;
+            flex-shrink: 0;
+        }
+        .toggle-stats-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .toggle-stats-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        @media (max-width: 768px) {
+            .floating-panel {
+                width: 90%;
+                right: -100%;
+            }
         }
     </style>
 </head>

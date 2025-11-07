@@ -1,5 +1,27 @@
 <x-layout title="Monitoramento de Equipamentos">
-    <div class="container-fluid mt-4">
+    {{-- Botão para abrir painel de filtros --}}
+    <button class="toggle-panel-btn" onclick="togglePanel()" title="Filtros e Ações">
+        <span id="panel-icon">⚙️</span>
+    </button>
+
+    {{-- Painel flutuante com filtros e ações --}}
+    <div class="floating-panel" id="floatingPanel">
+        <div class="floating-panel-content">
+            <h4 class="mb-3">Filtros e Ações</h4>
+
+            {{-- Componente de Filtros --}}
+            <x-leituras.filters
+                :clientes="$clientes"
+                :equipamentos="$equipamentos"
+                :filters="$filters"
+            />
+
+            {{-- Componente de Ações --}}
+            <x-leituras.actions />
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4" style="padding-bottom: 180px;">
 
         {{-- 1. CABEÇALHO E ALERTAS --}}
         <div class="d-flex align-items-center mb-4">
@@ -26,24 +48,10 @@
             <div class="alert alert-success" id="success-alert">{{ session('success') }}</div>
         @endif
 
-        
-        {{-- 2. COMPONENTE DE FILTROS --}}
-        <x-leituras.filters 
-            :clientes="$clientes" 
-            :equipamentos="$equipamentos" 
-            :filters="$filters" 
-        />
-
-        {{-- 3. COMPONENTE DE AÇÕES --}}
-        <x-leituras.actions />
-
-        {{-- 4. COMPONENTE DE ESTATÍSTICAS E GRÁFICOS --}}
+        {{-- GRÁFICOS COM ÊNFASE --}}
         @if(isset($filters['id_equipamento']) && !empty($filters['id_equipamento']))
             @if($leituras->isNotEmpty())
-                {{-- Estatísticas resumidas --}}
-                <x-leituras.stats :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
-
-                {{-- Gráficos interativos --}}
+                {{-- Gráficos interativos com ênfase --}}
                 <x-leituras.charts :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
             @else
                 <p class="alert alert-warning">Nenhum dado encontrado para o equipamento selecionado e filtros aplicados.</p>
@@ -53,4 +61,32 @@
         @endif
 
     </div>
+
+    {{-- Botão para mostrar/esconder cards de estatísticas --}}
+    @if(isset($filters['id_equipamento']) && !empty($filters['id_equipamento']) && $leituras->isNotEmpty())
+    <button class="toggle-stats-btn" onclick="toggleStats()" title="Estatísticas">
+        <span id="stats-icon">📊</span>
+    </button>
+
+    {{-- Overlay flutuante com estatísticas --}}
+    <div class="stats-overlay collapsed" id="statsOverlay">
+        <x-leituras.stats :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
+    </div>
+    @endif
+
+    <script>
+        function togglePanel() {
+            const panel = document.getElementById('floatingPanel');
+            const icon = document.getElementById('panel-icon');
+            panel.classList.toggle('active');
+            icon.textContent = panel.classList.contains('active') ? '✕' : '⚙️';
+        }
+
+        function toggleStats() {
+            const overlay = document.getElementById('statsOverlay');
+            const icon = document.getElementById('stats-icon');
+            overlay.classList.toggle('collapsed');
+            icon.textContent = overlay.classList.contains('collapsed') ? '📊' : '✕';
+        }
+    </script>
 </x-layout>
