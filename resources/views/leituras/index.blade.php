@@ -1,85 +1,121 @@
 <x-layout title="Monitoramento de Equipamentos">
-    {{-- Botão para abrir sidebar --}}
-    <button class="toggle-sidebar-btn" onclick="toggleSidebar()" title="Menu">
-        <span id="sidebar-icon">☰</span>
-        <span>Menu</span>
-    </button>
+    <div class="min-h-screen flex">
 
-    {{-- Overlay --}}
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+            <!-- Sidebar Header -->
+            <div class="bg-gradient-to-br from-primary-600 to-primary-700 text-white p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold">Monitoramento</h2>
+                        <p class="text-primary-100 text-sm mt-1">Filtros e Ações</p>
+                    </div>
+                    <button onclick="toggleSidebar()" class="lg:hidden text-white hover:bg-primary-500 p-2 rounded-lg transition-smooth">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
 
-    {{-- Sidebar com filtros e ações --}}
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h4 class="mb-1">Monitoramento</h4>
-            <small>Filtros e Ações</small>
-        </div>
-        <div class="sidebar-content">
-            {{-- Componente de Filtros --}}
-            <x-leituras.filters
-                :clientes="$clientes"
-                :equipamentos="$equipamentos"
-                :filters="$filters"
-            />
+            <!-- Sidebar Content -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <!-- Filtros -->
+                <x-leituras.filters
+                    :clientes="$clientes"
+                    :equipamentos="$equipamentos"
+                    :filters="$filters"
+                />
 
-            {{-- Componente de Ações --}}
-            <x-leituras.actions />
-        </div>
-    </div>
+                <!-- Ações -->
+                <x-leituras.actions />
+            </div>
+        </aside>
 
-    {{-- Cabeçalho flutuante --}}
-    <div class="floating-header" id="floatingHeader">
+        <!-- Overlay for mobile -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-neutral-900 bg-opacity-50 z-40 lg:hidden opacity-0 invisible transition-all duration-300"></div>
 
-        <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo da Empresa" style="height: 50px; margin-right: 15px;">
-                <div>
-                    <h3 class="mb-0">Monitoramento de Equipamentos</h3>
-                    @if($ultimaAtualizacao)
-                        <small class="text-muted">
-                            Última atualização: {{ \Carbon\Carbon::parse($ultimaAtualizacao)->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}
-                            | Próxima em: <strong id="countdown-timer" class="text-primary">60</strong>s
-                        </small>
+        <!-- Main Content -->
+        <div class="flex-1 lg:ml-80">
+            <!-- Floating Header -->
+            <header id="floatingHeader" class="sticky top-0 z-30 bg-white border-b border-neutral-200 shadow-sm transition-transform duration-300">
+                <div class="px-4 lg:px-8 py-4">
+                    <div class="flex items-center justify-between">
+                        <!-- Mobile Menu Button -->
+                        <button onclick="toggleSidebar()" class="lg:hidden text-neutral-600 hover:text-primary-600 p-2 hover:bg-neutral-100 rounded-lg transition-smooth">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+
+                        <!-- Logo and Title -->
+                        <div class="flex items-center space-x-4">
+                            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-12 w-auto">
+                            <div>
+                                <h1 class="text-xl lg:text-2xl font-bold text-neutral-900">Monitoramento de Equipamentos</h1>
+                                @if($ultimaAtualizacao)
+                                    <p class="text-sm text-neutral-500 mt-0.5">
+                                        Última atualização: <span class="font-medium">{{ \Carbon\Carbon::parse($ultimaAtualizacao)->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</span>
+                                        <span class="mx-2">|</span>
+                                        Próxima em: <span id="countdown-timer" class="font-semibold text-primary-600">60</span>s
+                                    </p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="p-4 lg:p-8">
+                @if(session('success'))
+                    <div id="success-alert" class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center transition-smooth shadow-sm">
+                        <svg class="w-5 h-5 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>{{ session('success') }}</span>
+                    </div>
+                @endif
+
+                @if($totalLeituras > 0)
+                    <p class="text-neutral-600 mb-6">Exibindo as últimas <span class="font-semibold text-neutral-900">{{ $totalLeituras }}</span> horas de dados.</p>
+                @else
+                    <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-6">
+                        Nenhum dado para exibir. Clique em "Atualizar" para processar.
+                    </div>
+                @endif
+
+                @if(isset($filters['id_equipamento']) && !empty($filters['id_equipamento']))
+                    @if($leituras->isNotEmpty())
+                        <!-- Stats Cards -->
+                        <div class="mb-8">
+                            <h2 class="text-lg font-semibold text-neutral-900 mb-4">Estatísticas Resumidas</h2>
+                            <x-leituras.stats :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
+                        </div>
+
+                        <!-- Charts -->
+                        <x-leituras.charts :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
+                    @else
+                        <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
+                            Nenhum dado encontrado para o equipamento selecionado e filtros aplicados.
+                        </div>
                     @endif
-                </div>
-            </div>
+                @else
+                    <div class="bg-primary-50 border border-primary-200 text-primary-800 px-4 py-3 rounded-lg">
+                        Selecione um equipamento para visualizar os dados em gráficos.
+                    </div>
+                @endif
+            </main>
         </div>
-    </div>
-
-    <div class="container-fluid main-content">
-
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" id="success-alert" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if(isset($filters['id_equipamento']) && !empty($filters['id_equipamento']))
-            @if($leituras->isNotEmpty())
-                {{-- Cards de estatísticas no topo --}}
-                <div class="stats-container">
-                    <h5 class="mb-3">Estatísticas Resumidas</h5>
-                    <x-leituras.stats :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
-                </div>
-
-                {{-- Gráficos interativos com ênfase --}}
-                <x-leituras.charts :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
-            @else
-                <p class="alert alert-warning">Nenhum dado encontrado para o equipamento selecionado e filtros aplicados.</p>
-            @endif
-        @else
-            <p class="alert alert-info">Selecione um equipamento para visualizar os dados em gráficos.</p>
-        @endif
-
     </div>
 
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('opacity-0');
+            overlay.classList.toggle('invisible');
         }
 
         let lastScrollTop = 0;
@@ -88,9 +124,9 @@
         window.addEventListener('scroll', function() {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             if (scrollTop > lastScrollTop && scrollTop > 100) {
-                header.classList.add('hidden');
+                header.style.transform = 'translateY(-100%)';
             } else {
-                header.classList.remove('hidden');
+                header.style.transform = 'translateY(0)';
             }
             lastScrollTop = scrollTop;
         });

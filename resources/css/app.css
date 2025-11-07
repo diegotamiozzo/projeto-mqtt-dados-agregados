@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -6,6 +7,57 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-primary-50: #eff6ff;
+    --color-primary-100: #dbeafe;
+    --color-primary-200: #bfdbfe;
+    --color-primary-300: #93c5fd;
+    --color-primary-400: #60a5fa;
+    --color-primary-500: #285995;
+    --color-primary-600: #1e4976;
+    --color-primary-700: #1a3d63;
+    --color-primary-800: #153150;
+    --color-primary-900: #0c1e31;
+
+    --color-neutral-50: #f8f9fa;
+    --color-neutral-100: #f1f3f5;
+    --color-neutral-200: #e9ecef;
+    --color-neutral-300: #dee2e6;
+    --color-neutral-400: #ced4da;
+    --color-neutral-500: #5a656c;
+    --color-neutral-600: #495057;
+    --color-neutral-700: #343a40;
+    --color-neutral-800: #212529;
+    --color-neutral-900: #151719;
+}
+
+@layer base {
+    * {
+        @apply border-neutral-200;
+    }
+
+    body {
+        @apply bg-neutral-50 text-neutral-800 antialiased;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-semibold text-neutral-900;
+    }
+}
+
+@layer utilities {
+    .transition-smooth {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}
+
+.card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
 }
