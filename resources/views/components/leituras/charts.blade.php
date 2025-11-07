@@ -53,7 +53,7 @@
                 </svg>
             </div>
         </div>
-        <div class="relative h-80 md:h-96">
+        <div class="relative" style="height: 400px;">
             <canvas id="correnteChart"></canvas>
         </div>
     </div>
@@ -73,7 +73,7 @@
                     </svg>
                 </div>
             </div>
-            <div class="relative h-80 md:h-96">
+            <div class="relative" style="height: 400px;">
                 <canvas id="temperaturaChart"></canvas>
             </div>
         </div>
@@ -92,7 +92,7 @@
                     </svg>
                 </div>
             </div>
-            <div class="relative h-80 md:h-96">
+            <div class="relative" style="height: 400px;">
                 <canvas id="umidadeChart"></canvas>
             </div>
         </div>
@@ -121,7 +121,7 @@
                 </button>
             </div>
         </div>
-        <div class="relative h-80 md:h-96">
+        <div class="relative" style="height: 400px;">
             <canvas id="grandezasChart"></canvas>
         </div>
     </div>

@@ -17,7 +17,7 @@ class LeiturasController extends Controller
         // Aplica filtros com conversão de timezone
         $this->applyFilters($query, $request);
 
-        $leituras = $query->orderByDesc('periodo_inicio')->limit(120)->get();
+        $leituras = $query->orderByDesc('periodo_inicio')->limit(24)->get();
 
         // Busca dados para preencher os filtros
         $clientes = DB::table('dados_agregados')->distinct()->orderBy('id_cliente')->pluck('id_cliente');
