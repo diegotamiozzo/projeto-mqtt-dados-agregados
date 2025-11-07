@@ -89,12 +89,12 @@
                     @if($leituras->isNotEmpty())
                         <!-- Stats Cards -->
                         <div class="mb-8">
-                            <h2 class="text-lg font-semibold text-neutral-900 mb-4">Estatísticas Resumidas</h2>
+                            <h2 class="text-lg font-semibold text-neutral-900 mb-4">Estatísticas Resumidas - {{ $nomeEquipamento }}</h2>
                             <x-leituras.stats :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
                         </div>
 
                         <!-- Charts -->
-                        <x-leituras.charts :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
+                        <x-leituras.charts :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" :nomeEquipamento="$nomeEquipamento" />
                     @else
                         <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
                             Nenhum dado encontrado para o equipamento selecionado e filtros aplicados.

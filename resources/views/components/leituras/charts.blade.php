@@ -1,4 +1,4 @@
-@props(['leituras', 'colunasVisiveis'])
+@props(['leituras', 'colunasVisiveis', 'nomeEquipamento'])
 
 @php
     $labels = [];
@@ -44,7 +44,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover">
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h3 class="text-lg font-semibold text-neutral-900">Corrente</h3>
+                <h3 class="text-lg font-semibold text-neutral-900">Corrente - {{ $nomeEquipamento }}</h3>
                 <p class="text-sm text-neutral-500 mt-1">Valores médios por hora (A)</p>
             </div>
             <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
@@ -64,7 +64,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover">
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h3 class="text-lg font-semibold text-neutral-900">Temperatura</h3>
+                    <h3 class="text-lg font-semibold text-neutral-900">Temperatura - {{ $nomeEquipamento }}</h3>
                     <p class="text-sm text-neutral-500 mt-1">Valores médios por hora (°C)</p>
                 </div>
                 <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
@@ -73,7 +73,7 @@
                     </svg>
                 </div>
             </div>
-            <div class="relative h-64 md:h-72">
+            <div class="relative h-80 md:h-96">
                 <canvas id="temperaturaChart"></canvas>
             </div>
         </div>
@@ -83,7 +83,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover">
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h3 class="text-lg font-semibold text-neutral-900">Umidade</h3>
+                    <h3 class="text-lg font-semibold text-neutral-900">Umidade - {{ $nomeEquipamento }}</h3>
                     <p class="text-sm text-neutral-500 mt-1">Valores médios por hora (%)</p>
                 </div>
                 <div class="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center">
@@ -92,7 +92,7 @@
                     </svg>
                 </div>
             </div>
-            <div class="relative h-64 md:h-72">
+            <div class="relative h-80 md:h-96">
                 <canvas id="umidadeChart"></canvas>
             </div>
         </div>
@@ -103,20 +103,20 @@
     <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
             <div>
-                <h3 class="text-lg font-semibold text-neutral-900">Grandezas Elétricas</h3>
+                <h3 class="text-lg font-semibold text-neutral-900">Grandezas Elétricas - {{ $nomeEquipamento }}</h3>
                 <p class="text-sm text-neutral-500 mt-1" id="grandezas-subtitle">Tensão - Valores médios por hora (V)</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <button type="button" onclick="switchGrandezasChart('tensao')" id="btn-tensao" class="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium transition-smooth hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                <button type="button" onclick="switchGrandezas('tensao')" id="btn-tensao" class="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium transition-smooth hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                     Tensão
                 </button>
-                <button type="button" onclick="switchGrandezasChart('corrente')" id="btn-corrente" class="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium transition-smooth hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                <button type="button" onclick="switchGrandezas('corrente')" id="btn-corrente" class="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium transition-smooth hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                     Corrente
                 </button>
-                <button type="button" onclick="switchGrandezasChart('potencia')" id="btn-potencia" class="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium transition-smooth hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                <button type="button" onclick="switchGrandezas('potencia')" id="btn-potencia" class="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium transition-smooth hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                     Potência
                 </button>
-                <button type="button" onclick="switchGrandezasChart('fator')" id="btn-fator" class="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium transition-smooth hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                <button type="button" onclick="switchGrandezas('fator')" id="btn-fator" class="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium transition-smooth hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                     FP
                 </button>
             </div>
@@ -450,7 +450,7 @@
         options: chartOptions
     });
 
-    window.switchGrandezasChart = function(tipo) {
+    window.switchGrandezas = function(tipo) {
         const subtitles = {
             tensao: 'Tensão - Valores médios por hora (V)',
             corrente: 'Corrente - Valores médios por hora (A)',
@@ -473,6 +473,10 @@
 
         grandezasChart.data = grandezasData[tipo];
         grandezasChart.update('active');
+
+        if (typeof window.switchGrandezasCards === 'function') {
+            window.switchGrandezasCards(tipo);
+        }
     };
     @endif
 </script>

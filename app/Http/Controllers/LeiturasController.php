@@ -13,10 +13,10 @@ class LeiturasController extends Controller
     public function index(Request $request)
     {
         $query = DB::table('dados_agregados');
- 
+
         // Aplica filtros com conversão de timezone
         $this->applyFilters($query, $request);
- 
+
         $leituras = $query->orderByDesc('periodo_inicio')->limit(120)->get();
 
         // Busca dados para preencher os filtros
@@ -29,6 +29,12 @@ class LeiturasController extends Controller
         // Detecta quais colunas têm dados para otimizar a exibição
         $colunasVisiveis = $this->detectarColunasVisiveis($leituras);
 
+        // Obter nome do equipamento selecionado
+        $nomeEquipamento = null;
+        if ($request->filled('id_equipamento')) {
+            $nomeEquipamento = $this->obterNomeEquipamento($request->id_equipamento);
+        }
+
         return view('leituras.index', [
             'leituras' => $leituras,
             'totalLeituras' => $leituras->count(),
@@ -36,7 +42,8 @@ class LeiturasController extends Controller
             'equipamentos' => $equipamentos,
             'filters' => $request->all(),
             'ultimaAtualizacao' => $ultimaAtualizacao,
-            'colunasVisiveis' => $colunasVisiveis
+            'colunasVisiveis' => $colunasVisiveis,
+            'nomeEquipamento' => $nomeEquipamento
         ]);
     }
 
@@ -93,6 +100,19 @@ class LeiturasController extends Controller
         }
 
         return $colunas;
+    }
+
+    private function obterNomeEquipamento($idEquipamento)
+    {
+        $partes = explode('_', $idEquipamento);
+
+        if (count($partes) >= 2) {
+            $tipo = ucfirst($partes[0]);
+            $numero = str_pad($partes[1], 2, '0', STR_PAD_LEFT);
+            return $tipo . ' ' . $numero;
+        }
+
+        return $idEquipamento;
     }
 
     public function agregar(Request $request)
