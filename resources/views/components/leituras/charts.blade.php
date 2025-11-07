@@ -59,9 +59,8 @@
     </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        @if($colunasVisiveis['temperatura'])
-        <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover">
+    @if($colunasVisiveis['temperatura'])
+    <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover mt-6">
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h3 class="text-lg font-semibold text-neutral-900">Temperatura - {{ $nomeEquipamento }}</h3>
@@ -80,7 +79,7 @@
         @endif
 
         @if($colunasVisiveis['umidade'])
-        <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover">
+        <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover mt-6">
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h3 class="text-lg font-semibold text-neutral-900">Umidade - {{ $nomeEquipamento }}</h3>
@@ -97,10 +96,9 @@
             </div>
         </div>
         @endif
-    </div>
 
     @if($colunasVisiveis['grandezas_eletricas'])
-    <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover">
+    <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover mt-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
             <div>
                 <h3 class="text-lg font-semibold text-neutral-900">Grandezas Elétricas - {{ $nomeEquipamento }}</h3>
