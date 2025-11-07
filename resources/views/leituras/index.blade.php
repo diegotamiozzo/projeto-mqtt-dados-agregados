@@ -3,31 +3,36 @@
 
         <!-- Sidebar -->
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
-            <!-- Sidebar Header -->
-            <div class="bg-gradient-to-br from-primary-600 to-primary-700 text-white p-2">
-                <div class="flex items-center justify-between">
-                    <!-- Imagem logo -->
-                    <img src="{{ asset('images/logo-branco.png') }}" alt="Logo" class="h-12 w-12 mb-4 block mx-auto">
-                    <button onclick="toggleSidebar()" class="lg:hidden text-white hover:bg-primary-500 p-2 rounded-lg transition-smooth">
+
+            <!-- Cabeçalho da Sidebar -->
+            <div class="bg-gradient-to-br from-primary-600 to-primary-700 text-white p-4 flex flex-col items-center text-center">
+                
+                <!-- Logo + botão fechar -->
+                <div class="w-full flex justify-between items-start mb-2">
+                    <img src="{{ asset('images/logo-branco.png') }}" alt="Logo" class="h-12 w-auto mx-auto block">
+                    
+                    <button onclick="toggleSidebar()" class="lg:hidden text-white hover:bg-primary-500 p-2 rounded-lg transition-smooth -mr-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
+
+                <!-- Link do site -->
+                <a href="https://www.tecnoeletro.com" target="_blank" class="text-sm font-medium text-white hover:underline block">
+                    www.tecnoeletro.com
+                </a>
             </div>
-            <!-- Sidebar Content -->
+
+            <!-- Conteúdo -->
             <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                <!-- Filtros -->
                 <x-leituras.filters :clientes="$clientes" :equipamentos="$equipamentos" :filters="$filters" />
-                <!-- Ações -->
                 <x-leituras.actions />
             </div>
         </aside>
-
-
+        
         <!-- Overlay for mobile -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-neutral-900 bg-opacity-50 z-40 lg:hidden opacity-0 invisible transition-all duration-300"></div>
-
         <!-- Main Content -->
         <div class="flex-1 lg:ml-80">
             <!-- Floating Header -->
