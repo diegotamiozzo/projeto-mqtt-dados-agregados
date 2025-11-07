@@ -4,12 +4,11 @@
         <!-- Sidebar -->
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
             <!-- Sidebar Header -->
-            <div class="bg-gradient-to-br from-primary-600 to-primary-700 text-white p-6">
+            <div class="bg-gradient-to-br from-primary-600 to-primary-700 text-white p-2">
                 <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-xl font-bold">Monitoramento</h2>
-                        <p class="text-primary-100 text-sm mt-1">Filtros e Ações</p>
-                    </div>
+                     <div>
+                         <img src="{{ asset('images/logo-branco.png') }}" alt="Logo" class="h-12 w-auto mb-4 block mx-auto">
+                     </div>
                     <button onclick="toggleSidebar()" class="lg:hidden text-white hover:bg-primary-500 p-2 rounded-lg transition-smooth">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -48,16 +47,17 @@
                             </svg>
                         </button>
 
-                        <!-- Logo and Title -->
+                        <!-- Title -->
                         <div class="flex items-center space-x-4">
-                            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-12 w-auto">
-                            <div>
-                                <h1 class="text-xl lg:text-2xl font-bold text-neutral-900">Monitoramento de Equipamentos</h1>
+                            <img src="{{ asset('images/icone.png') }}" alt="Logo" class="h-12 w-auto">
+                                <div>
+                                <h1 class="text-xl lg:text-2xl font-bold text-neutral-900">Monitore seus Equipamentos em Tempo Real</h1>
+                                
                                 @if($ultimaAtualizacao)
                                     <p class="text-sm text-neutral-500 mt-0.5">
                                         Última atualização: <span class="font-medium">{{ \Carbon\Carbon::parse($ultimaAtualizacao)->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</span>
                                         <span class="mx-2">|</span>
-                                        Próxima em: <span id="countdown-timer" class="font-semibold text-primary-600">60</span>s
+                                        Próxima em atualização em: <span id="countdown-timer" class="font-semibold text-primary-600">60</span>s
                                     </p>
                                 @endif
                             </div>

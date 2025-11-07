@@ -64,7 +64,7 @@
 <div class="overflow-x-auto pb-4">
     <div class="flex gap-4 min-w-max">
         @if($colunasVisiveis['brunidores'] && !empty($values['brunidores']))
-        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-[240px] border border-neutral-200 card-hover">
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-60 border border-neutral-200 card-hover">
             <div class="flex items-start justify-between">
                 <div class="flex-1">
                     <div class="flex items-center space-x-2 mb-3">
@@ -74,7 +74,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide">Brunidores</p>
+                            <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide">Brunidor</p>
                             <p class="text-2xl font-bold text-primary-600">{{ number_format($stats['brunidores']['avg'], 2, ',', '.') }}</p>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
         @endif
 
         @if($colunasVisiveis['descascadores'] && !empty($values['descascadores']))
-        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-[240px] border border-neutral-200 card-hover">
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-60 border border-neutral-200 card-hover">
             <div class="flex items-start justify-between">
                 <div class="flex-1">
                     <div class="flex items-center space-x-2 mb-3">
@@ -104,7 +104,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide">Descascadores</p>
+                            <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide">Descascador</p>
                             <p class="text-2xl font-bold text-green-600">{{ number_format($stats['descascadores']['avg'], 2, ',', '.') }}</p>
                         </div>
                     </div>
@@ -124,7 +124,7 @@
         @endif
 
         @if($colunasVisiveis['polidores'] && !empty($values['polidores']))
-        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-[240px] border border-neutral-200 card-hover">
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-60 border border-neutral-200 card-hover">
             <div class="flex items-start justify-between">
                 <div class="flex-1">
                     <div class="flex items-center space-x-2 mb-3">
@@ -134,7 +134,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide">Polidores</p>
+                            <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide">Polidor</p>
                             <p class="text-2xl font-bold text-amber-600">{{ number_format($stats['polidores']['avg'], 2, ',', '.') }}</p>
                         </div>
                     </div>
@@ -154,7 +154,7 @@
         @endif
 
         @if($colunasVisiveis['temperatura'] && !empty($values['temperatura']))
-        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-[240px] border border-neutral-200 card-hover">
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-60 border border-neutral-200 card-hover">
             <div class="flex items-start justify-between">
                 <div class="flex-1">
                     <div class="flex items-center space-x-2 mb-3">
@@ -184,7 +184,7 @@
         @endif
 
         @if($colunasVisiveis['umidade'] && !empty($values['umidade']))
-        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-[240px] border border-neutral-200 card-hover">
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-60 border border-neutral-200 card-hover">
             <div class="flex items-start justify-between">
                 <div class="flex-1">
                     <div class="flex items-center space-x-2 mb-3">
@@ -216,7 +216,7 @@
         @if($colunasVisiveis['grandezas_eletricas'])
             @foreach(['potencia_ativa' => 'Potência Ativa (kW)', 'potencia_reativa' => 'Potência Reativa (kVAr)', 'fator_potencia' => 'Fator de Potência'] as $key => $label)
                 @if(!empty($values[$key]))
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-[240px] border border-neutral-200 card-hover">
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-60 border border-neutral-200 card-hover">
                     <div class="flex items-start justify-between">
                         <div class="flex-1">
                             <div class="flex items-center space-x-2 mb-3">

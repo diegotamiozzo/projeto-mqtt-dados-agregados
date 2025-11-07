@@ -44,7 +44,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 card-hover">
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h3 class="text-lg font-semibold text-neutral-900">Corrente dos Equipamentos</h3>
+                <h3 class="text-lg font-semibold text-neutral-900">Corrente</h3>
                 <p class="text-sm text-neutral-500 mt-1">Valores médios por hora (A)</p>
             </div>
             <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">

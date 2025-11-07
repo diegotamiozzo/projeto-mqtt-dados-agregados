@@ -118,7 +118,7 @@ class LeiturasController extends Controller
         }
 
         return redirect()->route('leituras.index', $queryParams)
-            ->with('success', 'Agregação realizada com sucesso!');
+            ->with('success', 'Dados atualizados com sucesso!');
     }
 
     public function exportar(Request $request)
