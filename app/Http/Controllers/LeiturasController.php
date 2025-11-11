@@ -236,11 +236,11 @@ class LeiturasController extends Controller
         $totalRegistros = $leituras->count();
 
         if ($request->filled('data_inicio') && $request->filled('data_fim')) {
-            $dataInicioFiltro = \Carbon\Carbon::parse($request->data_inicio);
-            $dataFimFiltro = \Carbon\Carbon::parse($request->data_fim);
+            $dataInicioFiltro = \Carbon\Carbon::parse($request->data_inicio)->startOfDay();
+            $dataFimFiltro = \Carbon\Carbon::parse($request->data_fim)->endOfDay();
 
             $diasDiferenca = $dataInicioFiltro->diffInDays($dataFimFiltro);
-            $horasDiferenca = $dataInicioFiltro->diffInHours($dataFimFiltro);
+            $horasDiferenca = ceil($dataInicioFiltro->diffInHours($dataFimFiltro, true));
 
             return [
                 'dataInicio' => $dataInicioFiltro->format('d/m/Y H:i'),
