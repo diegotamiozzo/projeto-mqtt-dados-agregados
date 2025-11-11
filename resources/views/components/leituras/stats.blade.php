@@ -82,18 +82,22 @@
     $statusProducao = [];
     foreach(['brunidores', 'descascadores', 'polidores'] as $tipo) {
         if (!empty($values[$tipo]) && !is_null($stats[$tipo]['last'])) {
-            $ultimaHora = $stats[$tipo]['last'];
-            $mediaGeral = $stats[$tipo]['avg'];
+            $campo = 'corrente_' . $tipo . '_media';
 
-            if ($mediaGeral > 0) {
-                $diferencaPercentual = (($ultimaHora - $mediaGeral) / $mediaGeral) * 100;
+            $ultimaMedida = $stats[$tipo]['last'];
+
+            $primeiraLeitura = $leituras->first();
+            $mediaUltimaHora = $primeiraLeitura ? $primeiraLeitura->$campo : null;
+
+            if (!is_null($mediaUltimaHora) && $mediaUltimaHora > 0) {
+                $diferencaPercentual = (($ultimaMedida - $mediaUltimaHora) / $mediaUltimaHora) * 100;
 
                 if ($diferencaPercentual < -20) {
-                    $statusProducao[$tipo] = ['status' => 'leve', 'color' => 'blue', 'label' => 'Leve', 'ultima_hora' => $ultimaHora];
+                    $statusProducao[$tipo] = ['status' => 'leve', 'color' => 'blue', 'label' => 'Leve', 'ultima_medida' => $ultimaMedida, 'media_ultima_hora' => $mediaUltimaHora];
                 } elseif ($diferencaPercentual > 20) {
-                    $statusProducao[$tipo] = ['status' => 'pesada', 'color' => 'orange', 'label' => 'Pesada', 'ultima_hora' => $ultimaHora];
+                    $statusProducao[$tipo] = ['status' => 'pesada', 'color' => 'orange', 'label' => 'Pesada', 'ultima_medida' => $ultimaMedida, 'media_ultima_hora' => $mediaUltimaHora];
                 } else {
-                    $statusProducao[$tipo] = ['status' => 'normal', 'color' => 'green', 'label' => 'Normal', 'ultima_hora' => $ultimaHora];
+                    $statusProducao[$tipo] = ['status' => 'normal', 'color' => 'green', 'label' => 'Normal', 'ultima_medida' => $ultimaMedida, 'media_ultima_hora' => $mediaUltimaHora];
                 }
             }
         }
@@ -142,8 +146,8 @@
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Brunidor - Produção</p>
                 <p class="text-3xl font-bold text-{{ $status['color'] }}-600 mb-3">{{ $status['label'] }}</p>
                 <div class="text-xs text-neutral-600">
-                    <p>Última medida: {{ number_format($status['ultima_hora'], 2, ',', '.') }} A</p>
-                    <p>Média da última hora: {{ number_format($stats['brunidores']['avg'], 2, ',', '.') }} A</p>
+                    <p>Última medida: {{ number_format($status['ultima_medida'], 2, ',', '.') }} A</p>
+                    <p>Média da última hora: {{ number_format($status['media_ultima_hora'], 2, ',', '.') }} A</p>
                 </div>
             </div>
         </div>
@@ -212,8 +216,8 @@
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Descascador - Produção</p>
                 <p class="text-3xl font-bold text-{{ $status['color'] }}-600 mb-3">{{ $status['label'] }}</p>
                 <div class="text-xs text-neutral-600">
-                    <p>Última medida: {{ number_format($status['ultima_hora'], 2, ',', '.') }} A</p>
-                    <p>Média da última hora: {{ number_format($stats['descascadores']['avg'], 2, ',', '.') }} A</p>
+                    <p>Última medida: {{ number_format($status['ultima_medida'], 2, ',', '.') }} A</p>
+                    <p>Média da última hora: {{ number_format($status['media_ultima_hora'], 2, ',', '.') }} A</p>
                 </div>
             </div>
         </div>
@@ -282,8 +286,8 @@
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Polidor - Produção</p>
                 <p class="text-3xl font-bold text-{{ $status['color'] }}-600 mb-3">{{ $status['label'] }}</p>
                 <div class="text-xs text-neutral-600">
-                    <p>Última medida: {{ number_format($status['ultima_hora'], 2, ',', '.') }} A</p>
-                    <p>Média da última hora: {{ number_format($stats['polidores']['avg'], 2, ',', '.') }} A</p>
+                    <p>Última medida: {{ number_format($status['ultima_medida'], 2, ',', '.') }} A</p>
+                    <p>Média da última hora: {{ number_format($status['media_ultima_hora'], 2, ',', '.') }} A</p>
                 </div>
             </div>
         </div>
