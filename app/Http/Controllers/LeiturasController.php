@@ -46,11 +46,11 @@ class LeiturasController extends Controller
             $nomeEquipamento = $this->obterNomeEquipamento($request->id_equipamento);
         }
 
-        // Calcula disponibilidade dos equipamentos com corrente
-        $disponibilidade = $this->calcularDisponibilidade($leituras, $colunasVisiveis);
-
         // Calcula informações do período
         $periodoInfo = $this->calcularPeriodoInfo($leituras, $request);
+
+        // Calcula disponibilidade dos equipamentos com corrente
+        $disponibilidade = $this->calcularDisponibilidade($leituras, $colunasVisiveis, $periodoInfo, $request);
 
         return view('leituras.index', [
             'leituras' => $leituras,
@@ -134,7 +134,7 @@ class LeiturasController extends Controller
         return $idEquipamento;
     }
 
-    private function calcularDisponibilidade($leituras, $colunasVisiveis)
+    private function calcularDisponibilidade($leituras, $colunasVisiveis, $periodoInfo, $request)
     {
         $disponibilidade = [
             'brunidores' => null,
@@ -142,32 +142,36 @@ class LeiturasController extends Controller
             'polidores' => null,
         ];
 
+        if (!$periodoInfo || $leituras->isEmpty()) {
+            return $disponibilidade;
+        }
+
         $tiposEquipamento = [
             'brunidores' => 'corrente_brunidores_media',
             'descascadores' => 'corrente_descascadores_media',
             'polidores' => 'corrente_polidores_media',
         ];
 
+        $periodosEsperados = $periodoInfo['horas'];
+
+        if ($periodosEsperados <= 0) {
+            $periodosEsperados = 1;
+        }
+
         foreach ($tiposEquipamento as $tipo => $campo) {
             if (!$colunasVisiveis[$tipo]) {
                 continue;
             }
 
-            $totalPeriodos = 0;
             $periodosLigados = 0;
 
             foreach ($leituras as $leitura) {
-                if (!is_null($leitura->$campo)) {
-                    $totalPeriodos++;
-                    if ($leitura->$campo > 0) {
-                        $periodosLigados++;
-                    }
+                if (!is_null($leitura->$campo) && $leitura->$campo > 0) {
+                    $periodosLigados++;
                 }
             }
 
-            if ($totalPeriodos > 0) {
-                $disponibilidade[$tipo] = round(($periodosLigados / $totalPeriodos) * 100, 2);
-            }
+            $disponibilidade[$tipo] = round(($periodosLigados / $periodosEsperados) * 100, 2);
         }
 
         return $disponibilidade;
