@@ -142,7 +142,7 @@ class LeiturasController extends Controller
             'polidores' => null,
         ];
 
-        if (!$periodoInfo || $leituras->isEmpty()) {
+        if ($leituras->isEmpty()) {
             return $disponibilidade;
         }
 
@@ -152,26 +152,26 @@ class LeiturasController extends Controller
             'polidores' => 'corrente_polidores_media',
         ];
 
-        $periodosEsperados = $periodoInfo['horas'];
-
-        if ($periodosEsperados <= 0) {
-            $periodosEsperados = 1;
-        }
-
         foreach ($tiposEquipamento as $tipo => $campo) {
             if (!$colunasVisiveis[$tipo]) {
                 continue;
             }
 
+            $totalPeriodos = 0;
             $periodosLigados = 0;
 
             foreach ($leituras as $leitura) {
-                if (!is_null($leitura->$campo) && $leitura->$campo > 0) {
-                    $periodosLigados++;
+                if (!is_null($leitura->$campo)) {
+                    $totalPeriodos++;
+                    if ($leitura->$campo > 0) {
+                        $periodosLigados++;
+                    }
                 }
             }
 
-            $disponibilidade[$tipo] = round(($periodosLigados / $periodosEsperados) * 100, 2);
+            if ($totalPeriodos > 0) {
+                $disponibilidade[$tipo] = round(($periodosLigados / $totalPeriodos) * 100, 2);
+            }
         }
 
         return $disponibilidade;
