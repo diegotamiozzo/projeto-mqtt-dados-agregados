@@ -90,14 +90,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
-                @if(!is_null($disponibilidade['brunidores']))
-                <div class="flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $disponibilidade['brunidores'] >= 80 ? 'bg-green-100 text-green-700' : ($disponibilidade['brunidores'] >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }}">
-                    {{ number_format($disponibilidade['brunidores'], 1, ',', '.') }}%
-                </div>
-                @endif
             </div>
             <div>
-                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Brunidor</p>
+                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Brunidor - Corrente</p>
                 <p class="text-3xl font-bold text-primary-600 mb-3">{{ number_format($stats['brunidores']['last'], 2, ',', '.') }} <span class="text-sm text-neutral-500">A</span></p>
                 <div class="grid grid-cols-2 gap-2 text-xs text-neutral-600">
                     <div class="flex items-center">
@@ -111,6 +106,28 @@
                 </div>
             </div>
         </div>
+
+        @if(!is_null($disponibilidade['brunidores']))
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
+            <div class="flex items-start justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg {{ $disponibilidade['brunidores'] >= 80 ? 'bg-green-100' : ($disponibilidade['brunidores'] >= 50 ? 'bg-amber-100' : 'bg-red-100') }} flex items-center justify-center">
+                    <svg class="w-5 h-5 {{ $disponibilidade['brunidores'] >= 80 ? 'text-green-600' : ($disponibilidade['brunidores'] >= 50 ? 'text-amber-600' : 'text-red-600') }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Brunidor - Disponibilidade</p>
+                <p class="text-3xl font-bold {{ $disponibilidade['brunidores'] >= 80 ? 'text-green-600' : ($disponibilidade['brunidores'] >= 50 ? 'text-amber-600' : 'text-red-600') }} mb-3">{{ number_format($disponibilidade['brunidores'], 1, ',', '.') }}%</p>
+                <div class="text-xs text-neutral-600">
+                    <p class="flex items-center">
+                        <span class="inline-block w-2 h-2 rounded-full {{ $disponibilidade['brunidores'] >= 80 ? 'bg-green-500' : ($disponibilidade['brunidores'] >= 50 ? 'bg-amber-500' : 'bg-red-500') }} mr-2"></span>
+                        {{ $disponibilidade['brunidores'] >= 80 ? 'Alta' : ($disponibilidade['brunidores'] >= 50 ? 'Média' : 'Baixa') }} disponibilidade
+                    </p>
+                </div>
+            </div>
+        </div>
+        @endif
         @endif
 
         @if($colunasVisiveis['descascadores'] && !empty($values['descascadores']))
@@ -121,14 +138,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
-                @if(!is_null($disponibilidade['descascadores']))
-                <div class="flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $disponibilidade['descascadores'] >= 80 ? 'bg-green-100 text-green-700' : ($disponibilidade['descascadores'] >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }}">
-                    {{ number_format($disponibilidade['descascadores'], 1, ',', '.') }}%
-                </div>
-                @endif
             </div>
             <div>
-                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Descascador</p>
+                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Descascador - Corrente</p>
                 <p class="text-3xl font-bold text-green-600 mb-3">{{ number_format($stats['descascadores']['last'], 2, ',', '.') }} <span class="text-sm text-neutral-500">A</span></p>
                 <div class="grid grid-cols-2 gap-2 text-xs text-neutral-600">
                     <div class="flex items-center">
@@ -142,6 +154,28 @@
                 </div>
             </div>
         </div>
+
+        @if(!is_null($disponibilidade['descascadores']))
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
+            <div class="flex items-start justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg {{ $disponibilidade['descascadores'] >= 80 ? 'bg-green-100' : ($disponibilidade['descascadores'] >= 50 ? 'bg-amber-100' : 'bg-red-100') }} flex items-center justify-center">
+                    <svg class="w-5 h-5 {{ $disponibilidade['descascadores'] >= 80 ? 'text-green-600' : ($disponibilidade['descascadores'] >= 50 ? 'text-amber-600' : 'text-red-600') }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Descascador - Disponibilidade</p>
+                <p class="text-3xl font-bold {{ $disponibilidade['descascadores'] >= 80 ? 'text-green-600' : ($disponibilidade['descascadores'] >= 50 ? 'text-amber-600' : 'text-red-600') }} mb-3">{{ number_format($disponibilidade['descascadores'], 1, ',', '.') }}%</p>
+                <div class="text-xs text-neutral-600">
+                    <p class="flex items-center">
+                        <span class="inline-block w-2 h-2 rounded-full {{ $disponibilidade['descascadores'] >= 80 ? 'bg-green-500' : ($disponibilidade['descascadores'] >= 50 ? 'bg-amber-500' : 'bg-red-500') }} mr-2"></span>
+                        {{ $disponibilidade['descascadores'] >= 80 ? 'Alta' : ($disponibilidade['descascadores'] >= 50 ? 'Média' : 'Baixa') }} disponibilidade
+                    </p>
+                </div>
+            </div>
+        </div>
+        @endif
         @endif
 
         @if($colunasVisiveis['polidores'] && !empty($values['polidores']))
@@ -152,14 +186,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
-                @if(!is_null($disponibilidade['polidores']))
-                <div class="flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $disponibilidade['polidores'] >= 80 ? 'bg-green-100 text-green-700' : ($disponibilidade['polidores'] >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }}">
-                    {{ number_format($disponibilidade['polidores'], 1, ',', '.') }}%
-                </div>
-                @endif
             </div>
             <div>
-                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Polidor</p>
+                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Polidor - Corrente</p>
                 <p class="text-3xl font-bold text-amber-600 mb-3">{{ number_format($stats['polidores']['last'], 2, ',', '.') }} <span class="text-sm text-neutral-500">A</span></p>
                 <div class="grid grid-cols-2 gap-2 text-xs text-neutral-600">
                     <div class="flex items-center">
@@ -173,6 +202,28 @@
                 </div>
             </div>
         </div>
+
+        @if(!is_null($disponibilidade['polidores']))
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
+            <div class="flex items-start justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg {{ $disponibilidade['polidores'] >= 80 ? 'bg-green-100' : ($disponibilidade['polidores'] >= 50 ? 'bg-amber-100' : 'bg-red-100') }} flex items-center justify-center">
+                    <svg class="w-5 h-5 {{ $disponibilidade['polidores'] >= 80 ? 'text-green-600' : ($disponibilidade['polidores'] >= 50 ? 'text-amber-600' : 'text-red-600') }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Polidor - Disponibilidade</p>
+                <p class="text-3xl font-bold {{ $disponibilidade['polidores'] >= 80 ? 'text-green-600' : ($disponibilidade['polidores'] >= 50 ? 'text-amber-600' : 'text-red-600') }} mb-3">{{ number_format($disponibilidade['polidores'], 1, ',', '.') }}%</p>
+                <div class="text-xs text-neutral-600">
+                    <p class="flex items-center">
+                        <span class="inline-block w-2 h-2 rounded-full {{ $disponibilidade['polidores'] >= 80 ? 'bg-green-500' : ($disponibilidade['polidores'] >= 50 ? 'bg-amber-500' : 'bg-red-500') }} mr-2"></span>
+                        {{ $disponibilidade['polidores'] >= 80 ? 'Alta' : ($disponibilidade['polidores'] >= 50 ? 'Média' : 'Baixa') }} disponibilidade
+                    </p>
+                </div>
+            </div>
+        </div>
+        @endif
         @endif
 
         @if($colunasVisiveis['temperatura'] && !empty($values['temperatura']))

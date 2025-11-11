@@ -17,10 +17,8 @@ class LeiturasController extends Controller
         // Aplica filtros com conversão de timezone
         $this->applyFilters($query, $request);
 
-        // Aplica limite apenas se não houver filtro de data
-        if (!$request->filled('data_inicio') && !$request->filled('data_fim')) {
-            $query->limit(24);
-        }
+        // Aplica limite de 1000 registros para evitar problemas de memória
+        $query->limit(1000);
 
         $leituras = $query->orderByDesc('periodo_inicio')->get();
 
