@@ -76,8 +76,17 @@
                     </div>
                 @endif
 
-                @if($totalLeituras > 0 && isset($filters['id_equipamento']) && !empty($filters['id_equipamento']))
-                    <p class="text-neutral-600 mb-6">Exibindo as últimas <span class="font-semibold text-neutral-900">{{ $totalLeituras }}</span> horas de dados.</p>
+                @if($totalLeituras > 0 && isset($filters['id_equipamento']) && !empty($filters['id_equipamento']) && $periodoInfo)
+                    <p class="text-neutral-600 mb-6">
+                        Exibindo <span class="font-semibold text-neutral-900">{{ $periodoInfo['totalRegistros'] }}</span> registros
+                        de <span class="font-semibold text-neutral-900">{{ $periodoInfo['dataInicio'] }}</span>
+                        até <span class="font-semibold text-neutral-900">{{ $periodoInfo['dataFim'] }}</span>
+                        @if($periodoInfo['dias'] > 0)
+                            ({{ $periodoInfo['dias'] }} {{ $periodoInfo['dias'] == 1 ? 'dia' : 'dias' }})
+                        @else
+                            ({{ $periodoInfo['horas'] }} {{ $periodoInfo['horas'] == 1 ? 'hora' : 'horas' }})
+                        @endif
+                    </p>
                 @elseif($totalLeituras == 0)
                     <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-6">
                         Nenhum dado para exibir. Clique em "Atualizar" para processar.

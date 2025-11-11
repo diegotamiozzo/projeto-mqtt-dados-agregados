@@ -49,6 +49,9 @@ class LeiturasController extends Controller
         // Calcula disponibilidade dos equipamentos com corrente
         $disponibilidade = $this->calcularDisponibilidade($leituras, $colunasVisiveis);
 
+        // Calcula informações do período
+        $periodoInfo = $this->calcularPeriodoInfo($leituras, $request);
+
         return view('leituras.index', [
             'leituras' => $leituras,
             'totalLeituras' => $leituras->count(),
@@ -58,7 +61,8 @@ class LeiturasController extends Controller
             'ultimaAtualizacao' => $ultimaAtualizacao,
             'colunasVisiveis' => $colunasVisiveis,
             'nomeEquipamento' => $nomeEquipamento,
-            'disponibilidade' => $disponibilidade
+            'disponibilidade' => $disponibilidade,
+            'periodoInfo' => $periodoInfo
         ]);
     }
 
@@ -167,6 +171,31 @@ class LeiturasController extends Controller
         }
 
         return $disponibilidade;
+    }
+
+    private function calcularPeriodoInfo($leituras, $request)
+    {
+        if ($leituras->isEmpty()) {
+            return null;
+        }
+
+        $primeiraLeitura = $leituras->last();
+        $ultimaLeitura = $leituras->first();
+
+        $dataInicio = \Carbon\Carbon::parse($primeiraLeitura->periodo_inicio);
+        $dataFim = \Carbon\Carbon::parse($ultimaLeitura->periodo_fim);
+
+        $totalRegistros = $leituras->count();
+        $diasDiferenca = $dataInicio->diffInDays($dataFim);
+        $horasDiferenca = $dataInicio->diffInHours($dataFim);
+
+        return [
+            'dataInicio' => $dataInicio->format('d/m/Y H:i'),
+            'dataFim' => $dataFim->format('d/m/Y H:i'),
+            'totalRegistros' => $totalRegistros,
+            'dias' => $diasDiferenca,
+            'horas' => $horasDiferenca,
+        ];
     }
 
     public function agregar(Request $request)
