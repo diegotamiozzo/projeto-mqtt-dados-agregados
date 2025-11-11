@@ -26,7 +26,15 @@ class LeiturasController extends Controller
 
         // Busca dados para preencher os filtros
         $clientes = DB::table('dados_agregados')->distinct()->orderBy('id_cliente')->pluck('id_cliente');
-        $equipamentos = DB::table('dados_agregados')->distinct()->orderBy('id_equipamento')->pluck('id_equipamento');
+
+        // Busca equipamentos filtrados por cliente, se houver cliente selecionado
+        $equipamentos = DB::table('dados_agregados')
+            ->distinct()
+            ->when($request->filled('id_cliente'), function ($query) use ($request) {
+                return $query->where('id_cliente', $request->id_cliente);
+            })
+            ->orderBy('id_equipamento')
+            ->pluck('id_equipamento');
 
         // Busca o timestamp da última agregação bem-sucedida
         $ultimaAtualizacao = DB::table('dados_agregados')->max('updated_at');

@@ -3,7 +3,7 @@
 <div class="space-y-6">
     <h3 class="text-sm font-semibold text-neutral-700 uppercase tracking-wide">Filtros</h3>
 
-    <form method="GET" action="{{ route('leituras.index') }}" class="space-y-4">
+    <form method="GET" action="{{ route('leituras.index') }}" class="space-y-4" id="filtrosForm">
         <div>
             <label for="id_cliente" class="block text-sm font-medium text-neutral-700 mb-2">
                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -12,14 +12,14 @@
                 Cliente
             </label>
             <select name="id_cliente" id="id_cliente" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth bg-white text-neutral-900">
-                <option value="">Todos os clientes</option>
+                <option value="">Selecione um cliente</option>
                 @foreach($clientes as $cliente)
                     <option value="{{ $cliente }}" {{ ($filters['id_cliente'] ?? '') == $cliente ? 'selected' : '' }}>{{ $cliente }}</option>
                 @endforeach
             </select>
         </div>
 
-        <div>
+        <div id="equipamentoContainer" style="{{ empty($filters['id_cliente']) ? 'display: none;' : '' }}">
             <label for="id_equipamento" class="block text-sm font-medium text-neutral-700 mb-2">
                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
@@ -67,3 +67,33 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const clienteSelect = document.getElementById('id_cliente');
+    const equipamentoContainer = document.getElementById('equipamentoContainer');
+    const equipamentoSelect = document.getElementById('id_equipamento');
+    const form = document.getElementById('filtrosForm');
+
+    clienteSelect.addEventListener('change', function() {
+        if (this.value) {
+            equipamentoContainer.style.display = 'block';
+            equipamentoSelect.value = '';
+
+            const formData = new FormData();
+            formData.append('id_cliente', this.value);
+
+            const currentDataInicio = document.getElementById('data_inicio').value;
+            const currentDataFim = document.getElementById('data_fim').value;
+
+            if (currentDataInicio) formData.append('data_inicio', currentDataInicio);
+            if (currentDataFim) formData.append('data_fim', currentDataFim);
+
+            form.submit();
+        } else {
+            equipamentoContainer.style.display = 'none';
+            equipamentoSelect.value = '';
+        }
+    });
+});
+</script>
