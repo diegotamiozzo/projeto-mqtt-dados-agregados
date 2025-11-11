@@ -79,11 +79,11 @@ class LeiturasController extends Controller
             $query->where('id_equipamento', $request->id_equipamento);
         }
         if ($request->filled('data_inicio')) {
-            $dataInicio = Carbon::parse($request->data_inicio)->startOfDay()->utc();
+            $dataInicio = Carbon::parse($request->data_inicio)->startOfDay();
             $query->where('periodo_inicio', '>=', $dataInicio);
         }
         if ($request->filled('data_fim')) {
-            $dataFim = Carbon::parse($request->data_fim)->endOfDay()->utc();
+            $dataFim = Carbon::parse($request->data_fim)->endOfDay();
             $query->where('periodo_inicio', '<=', $dataFim);
         }
     }

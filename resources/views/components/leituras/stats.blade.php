@@ -82,26 +82,18 @@
     $statusProducao = [];
     foreach(['brunidores', 'descascadores', 'polidores'] as $tipo) {
         if (!empty($values[$tipo]) && !is_null($stats[$tipo]['last'])) {
-            $campo = 'corrente_' . $tipo . '_media';
+            $ultimaHora = $stats[$tipo]['last'];
+            $mediaGeral = $stats[$tipo]['avg'];
 
-            $valoresUltimaHora = [];
-            foreach($leituras->take(1) as $leitura) {
-                if (!is_null($leitura->$campo)) {
-                    $valoresUltimaHora[] = $leitura->$campo;
-                }
-            }
-
-            if (!empty($valoresUltimaHora)) {
-                $mediaUltimaHora = array_sum($valoresUltimaHora) / count($valoresUltimaHora);
-                $mediaGeral = $stats[$tipo]['avg'];
-                $diferencaPercentual = (($mediaUltimaHora - $mediaGeral) / $mediaGeral) * 100;
+            if ($mediaGeral > 0) {
+                $diferencaPercentual = (($ultimaHora - $mediaGeral) / $mediaGeral) * 100;
 
                 if ($diferencaPercentual < -20) {
-                    $statusProducao[$tipo] = ['status' => 'leve', 'color' => 'blue', 'label' => 'Leve', 'ultima_hora' => $mediaUltimaHora];
+                    $statusProducao[$tipo] = ['status' => 'leve', 'color' => 'blue', 'label' => 'Leve', 'ultima_hora' => $ultimaHora];
                 } elseif ($diferencaPercentual > 20) {
-                    $statusProducao[$tipo] = ['status' => 'pesada', 'color' => 'orange', 'label' => 'Pesada', 'ultima_hora' => $mediaUltimaHora];
+                    $statusProducao[$tipo] = ['status' => 'pesada', 'color' => 'orange', 'label' => 'Pesada', 'ultima_hora' => $ultimaHora];
                 } else {
-                    $statusProducao[$tipo] = ['status' => 'normal', 'color' => 'green', 'label' => 'Normal', 'ultima_hora' => $mediaUltimaHora];
+                    $statusProducao[$tipo] = ['status' => 'normal', 'color' => 'green', 'label' => 'Normal', 'ultima_hora' => $ultimaHora];
                 }
             }
         }
