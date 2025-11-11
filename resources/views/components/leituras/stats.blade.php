@@ -78,6 +78,23 @@
         $stats['potencia_reativa']['last'] = $ultimaLeitura->potencia_reativa_media;
         $stats['fator_potencia']['last'] = $ultimaLeitura->fator_potencia_media;
     }
+
+    $statusProducao = [];
+    foreach(['brunidores', 'descascadores', 'polidores'] as $tipo) {
+        if (!empty($values[$tipo]) && !is_null($stats[$tipo]['last']) && !is_null($stats[$tipo]['avg'])) {
+            $ultima = $stats[$tipo]['last'];
+            $media = $stats[$tipo]['avg'];
+            $diferencaPercentual = (($ultima - $media) / $media) * 100;
+
+            if ($diferencaPercentual < -20) {
+                $statusProducao[$tipo] = ['status' => 'leve', 'color' => 'blue', 'label' => 'Leve'];
+            } elseif ($diferencaPercentual > 20) {
+                $statusProducao[$tipo] = ['status' => 'pesada', 'color' => 'orange', 'label' => 'Pesada'];
+            } else {
+                $statusProducao[$tipo] = ['status' => 'normal', 'color' => 'green', 'label' => 'Normal'];
+            }
+        }
+    }
 @endphp
 
 <div class="overflow-x-auto pb-4">
@@ -93,7 +110,8 @@
             </div>
             <div>
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Brunidor - Corrente</p>
-                <p class="text-3xl font-bold text-primary-600 mb-3">{{ number_format($stats['brunidores']['last'], 2, ',', '.') }} <span class="text-sm text-neutral-500">A</span></p>
+                <p class="text-3xl font-bold text-primary-600 mb-2">{{ number_format($stats['brunidores']['avg'], 2, ',', '.') }} <span class="text-sm text-neutral-500">A</span></p>
+                <p class="text-xs text-neutral-500 mb-3">Média do período</p>
                 <div class="grid grid-cols-2 gap-2 text-xs text-neutral-600">
                     <div class="flex items-center">
                         <svg class="w-3 h-3 mr-1 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -106,6 +124,27 @@
                 </div>
             </div>
         </div>
+
+        @if(isset($statusProducao['brunidores']))
+        @php $status = $statusProducao['brunidores']; @endphp
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
+            <div class="flex items-start justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-{{ $status['color'] }}-100 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-{{ $status['color'] }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Brunidor - Produção</p>
+                <p class="text-3xl font-bold text-{{ $status['color'] }}-600 mb-3">{{ $status['label'] }}</p>
+                <div class="text-xs text-neutral-600">
+                    <p>Última: {{ number_format($stats['brunidores']['last'], 2, ',', '.') }} A</p>
+                    <p>Média: {{ number_format($stats['brunidores']['avg'], 2, ',', '.') }} A</p>
+                </div>
+            </div>
+        </div>
+        @endif
 
         @if(!is_null($disponibilidade['brunidores']))
         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
@@ -141,7 +180,8 @@
             </div>
             <div>
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Descascador - Corrente</p>
-                <p class="text-3xl font-bold text-green-600 mb-3">{{ number_format($stats['descascadores']['last'], 2, ',', '.') }} <span class="text-sm text-neutral-500">A</span></p>
+                <p class="text-3xl font-bold text-green-600 mb-2">{{ number_format($stats['descascadores']['avg'], 2, ',', '.') }} <span class="text-sm text-neutral-500">A</span></p>
+                <p class="text-xs text-neutral-500 mb-3">Média do período</p>
                 <div class="grid grid-cols-2 gap-2 text-xs text-neutral-600">
                     <div class="flex items-center">
                         <svg class="w-3 h-3 mr-1 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -154,6 +194,27 @@
                 </div>
             </div>
         </div>
+
+        @if(isset($statusProducao['descascadores']))
+        @php $status = $statusProducao['descascadores']; @endphp
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
+            <div class="flex items-start justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-{{ $status['color'] }}-100 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-{{ $status['color'] }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Descascador - Produção</p>
+                <p class="text-3xl font-bold text-{{ $status['color'] }}-600 mb-3">{{ $status['label'] }}</p>
+                <div class="text-xs text-neutral-600">
+                    <p>Última: {{ number_format($stats['descascadores']['last'], 2, ',', '.') }} A</p>
+                    <p>Média: {{ number_format($stats['descascadores']['avg'], 2, ',', '.') }} A</p>
+                </div>
+            </div>
+        </div>
+        @endif
 
         @if(!is_null($disponibilidade['descascadores']))
         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
@@ -189,7 +250,8 @@
             </div>
             <div>
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Polidor - Corrente</p>
-                <p class="text-3xl font-bold text-amber-600 mb-3">{{ number_format($stats['polidores']['last'], 2, ',', '.') }} <span class="text-sm text-neutral-500">A</span></p>
+                <p class="text-3xl font-bold text-amber-600 mb-2">{{ number_format($stats['polidores']['avg'], 2, ',', '.') }} <span class="text-sm text-neutral-500">A</span></p>
+                <p class="text-xs text-neutral-500 mb-3">Média do período</p>
                 <div class="grid grid-cols-2 gap-2 text-xs text-neutral-600">
                     <div class="flex items-center">
                         <svg class="w-3 h-3 mr-1 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -202,6 +264,27 @@
                 </div>
             </div>
         </div>
+
+        @if(isset($statusProducao['polidores']))
+        @php $status = $statusProducao['polidores']; @endphp
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
+            <div class="flex items-start justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-{{ $status['color'] }}-100 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-{{ $status['color'] }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Polidor - Produção</p>
+                <p class="text-3xl font-bold text-{{ $status['color'] }}-600 mb-3">{{ $status['label'] }}</p>
+                <div class="text-xs text-neutral-600">
+                    <p>Última: {{ number_format($stats['polidores']['last'], 2, ',', '.') }} A</p>
+                    <p>Média: {{ number_format($stats['polidores']['avg'], 2, ',', '.') }} A</p>
+                </div>
+            </div>
+        </div>
+        @endif
 
         @if(!is_null($disponibilidade['polidores']))
         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
