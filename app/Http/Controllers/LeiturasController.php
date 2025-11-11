@@ -142,7 +142,7 @@ class LeiturasController extends Controller
             'polidores' => null,
         ];
 
-        if ($leituras->isEmpty()) {
+        if (!$periodoInfo) {
             return $disponibilidade;
         }
 
@@ -152,26 +152,26 @@ class LeiturasController extends Controller
             'polidores' => 'corrente_polidores_media',
         ];
 
+        $periodosEsperados = $periodoInfo['horas_filtradas'];
+
+        if ($periodosEsperados <= 0) {
+            return $disponibilidade;
+        }
+
         foreach ($tiposEquipamento as $tipo => $campo) {
             if (!$colunasVisiveis[$tipo]) {
                 continue;
             }
 
-            $totalPeriodos = 0;
             $periodosLigados = 0;
 
             foreach ($leituras as $leitura) {
-                if (!is_null($leitura->$campo)) {
-                    $totalPeriodos++;
-                    if ($leitura->$campo > 0) {
-                        $periodosLigados++;
-                    }
+                if (!is_null($leitura->$campo) && $leitura->$campo > 0) {
+                    $periodosLigados++;
                 }
             }
 
-            if ($totalPeriodos > 0) {
-                $disponibilidade[$tipo] = round(($periodosLigados / $totalPeriodos) * 100, 2);
-            }
+            $disponibilidade[$tipo] = round(($periodosLigados / $periodosEsperados) * 100, 2);
         }
 
         return $disponibilidade;
@@ -179,8 +179,23 @@ class LeiturasController extends Controller
 
     private function calcularPeriodoInfo($leituras, $request)
     {
+        $info = [
+            'dataInicio' => null,
+            'dataFim' => null,
+            'totalRegistros' => 0,
+            'dias' => 0,
+            'horas' => 0,
+            'horas_filtradas' => 0,
+        ];
+
+        if ($request->filled('data_inicio') && $request->filled('data_fim')) {
+            $dataInicioFiltro = \Carbon\Carbon::parse($request->data_inicio);
+            $dataFimFiltro = \Carbon\Carbon::parse($request->data_fim);
+            $info['horas_filtradas'] = $dataInicioFiltro->diffInHours($dataFimFiltro);
+        }
+
         if ($leituras->isEmpty()) {
-            return null;
+            return $info;
         }
 
         $primeiraLeitura = $leituras->last();
@@ -199,6 +214,7 @@ class LeiturasController extends Controller
             'totalRegistros' => $totalRegistros,
             'dias' => $diasDiferenca,
             'horas' => $horasDiferenca,
+            'horas_filtradas' => $info['horas_filtradas'],
         ];
     }
 
