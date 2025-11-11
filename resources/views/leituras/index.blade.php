@@ -102,7 +102,7 @@
                         </div>
 
                         <!-- Charts -->
-                        <x-leituras.charts :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" :nomeEquipamento="$nomeEquipamento" />
+                        <x-leituras.charts :leituras="$leiturasGrafico" :colunasVisiveis="$colunasVisiveis" :nomeEquipamento="$nomeEquipamento" />
                     @else
                         <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
                             Nenhum dado encontrado para o equipamento selecionado e filtros aplicados.

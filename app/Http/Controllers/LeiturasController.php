@@ -52,8 +52,12 @@ class LeiturasController extends Controller
         // Calcula disponibilidade dos equipamentos com corrente
         $disponibilidade = $this->calcularDisponibilidade($leituras, $colunasVisiveis, $periodoInfo, $request);
 
+        // Preenche gaps para o gráfico se houver filtro de período
+        $leiturasComGaps = $this->preencherGaps($leituras, $request);
+
         return view('leituras.index', [
             'leituras' => $leituras,
+            'leiturasGrafico' => $leiturasComGaps,
             'totalLeituras' => $leituras->count(),
             'clientes' => $clientes,
             'equipamentos' => $equipamentos,
@@ -177,25 +181,79 @@ class LeiturasController extends Controller
         return $disponibilidade;
     }
 
+    private function preencherGaps($leituras, $request)
+    {
+        if (!$request->filled('data_inicio') || !$request->filled('data_fim')) {
+            return $leituras;
+        }
+
+        $dataInicio = Carbon::parse($request->data_inicio, 'America/Sao_Paulo')->startOfDay();
+        $dataFim = Carbon::parse($request->data_fim, 'America/Sao_Paulo')->endOfDay();
+
+        $leiturasIndexadas = [];
+        foreach ($leituras as $leitura) {
+            $hora = Carbon::parse($leitura->periodo_inicio)->timezone('America/Sao_Paulo')->format('Y-m-d H:00:00');
+            $leiturasIndexadas[$hora] = $leitura;
+        }
+
+        $resultado = collect();
+        $dataAtual = $dataInicio->copy();
+
+        while ($dataAtual <= $dataFim) {
+            $chave = $dataAtual->format('Y-m-d H:00:00');
+
+            if (isset($leiturasIndexadas[$chave])) {
+                $resultado->push($leiturasIndexadas[$chave]);
+            } else {
+                $resultado->push((object)[
+                    'periodo_inicio' => $dataAtual->copy()->utc()->toDateTimeString(),
+                    'periodo_fim' => $dataAtual->copy()->addHour()->utc()->toDateTimeString(),
+                    'corrente_brunidores_media' => null,
+                    'corrente_descascadores_media' => null,
+                    'corrente_polidores_media' => null,
+                    'temperatura_media' => null,
+                    'umidade_media' => null,
+                    'tensao_r_media' => null,
+                    'tensao_s_media' => null,
+                    'tensao_t_media' => null,
+                    'corrente_r_media' => null,
+                    'corrente_s_media' => null,
+                    'corrente_t_media' => null,
+                    'potencia_ativa_media' => null,
+                    'potencia_reativa_media' => null,
+                    'fator_potencia_media' => null,
+                ]);
+            }
+
+            $dataAtual->addHour();
+        }
+
+        return $resultado;
+    }
+
     private function calcularPeriodoInfo($leituras, $request)
     {
-        $info = [
-            'dataInicio' => null,
-            'dataFim' => null,
-            'totalRegistros' => 0,
-            'dias' => 0,
-            'horas' => 0,
-            'horas_filtradas' => 0,
-        ];
+        $totalRegistros = $leituras->count();
 
         if ($request->filled('data_inicio') && $request->filled('data_fim')) {
             $dataInicioFiltro = \Carbon\Carbon::parse($request->data_inicio);
             $dataFimFiltro = \Carbon\Carbon::parse($request->data_fim);
-            $info['horas_filtradas'] = $dataInicioFiltro->diffInHours($dataFimFiltro);
+
+            $diasDiferenca = $dataInicioFiltro->diffInDays($dataFimFiltro);
+            $horasDiferenca = $dataInicioFiltro->diffInHours($dataFimFiltro);
+
+            return [
+                'dataInicio' => $dataInicioFiltro->format('d/m/Y H:i'),
+                'dataFim' => $dataFimFiltro->format('d/m/Y H:i'),
+                'totalRegistros' => $totalRegistros,
+                'dias' => $diasDiferenca,
+                'horas' => $horasDiferenca,
+                'horas_filtradas' => $horasDiferenca,
+            ];
         }
 
         if ($leituras->isEmpty()) {
-            return $info;
+            return null;
         }
 
         $primeiraLeitura = $leituras->last();
@@ -204,7 +262,6 @@ class LeiturasController extends Controller
         $dataInicio = \Carbon\Carbon::parse($primeiraLeitura->periodo_inicio);
         $dataFim = \Carbon\Carbon::parse($ultimaLeitura->periodo_fim);
 
-        $totalRegistros = $leituras->count();
         $diasDiferenca = $dataInicio->diffInDays($dataFim);
         $horasDiferenca = $dataInicio->diffInHours($dataFim);
 
@@ -214,7 +271,7 @@ class LeiturasController extends Controller
             'totalRegistros' => $totalRegistros,
             'dias' => $diasDiferenca,
             'horas' => $horasDiferenca,
-            'horas_filtradas' => $info['horas_filtradas'],
+            'horas_filtradas' => $horasDiferenca,
         ];
     }
 
