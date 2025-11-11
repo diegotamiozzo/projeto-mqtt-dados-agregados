@@ -89,7 +89,7 @@
                         <!-- Stats Cards -->
                         <div class="mb-8">
                             <h2 class="text-lg font-semibold text-neutral-900 mb-4">Estatísticas Resumidas - {{ $nomeEquipamento }}</h2>
-                            <x-leituras.stats :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
+                            <x-leituras.stats :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" :disponibilidade="$disponibilidade" />
                         </div>
 
                         <!-- Charts -->

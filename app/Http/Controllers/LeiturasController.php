@@ -48,6 +48,9 @@ class LeiturasController extends Controller
             $nomeEquipamento = $this->obterNomeEquipamento($request->id_equipamento);
         }
 
+        // Calcula disponibilidade dos equipamentos com corrente
+        $disponibilidade = $this->calcularDisponibilidade($leituras, $colunasVisiveis);
+
         return view('leituras.index', [
             'leituras' => $leituras,
             'totalLeituras' => $leituras->count(),
@@ -56,7 +59,8 @@ class LeiturasController extends Controller
             'filters' => $request->all(),
             'ultimaAtualizacao' => $ultimaAtualizacao,
             'colunasVisiveis' => $colunasVisiveis,
-            'nomeEquipamento' => $nomeEquipamento
+            'nomeEquipamento' => $nomeEquipamento,
+            'disponibilidade' => $disponibilidade
         ]);
     }
 
@@ -126,6 +130,45 @@ class LeiturasController extends Controller
         }
 
         return $idEquipamento;
+    }
+
+    private function calcularDisponibilidade($leituras, $colunasVisiveis)
+    {
+        $disponibilidade = [
+            'brunidores' => null,
+            'descascadores' => null,
+            'polidores' => null,
+        ];
+
+        $tiposEquipamento = [
+            'brunidores' => 'corrente_brunidores_media',
+            'descascadores' => 'corrente_descascadores_media',
+            'polidores' => 'corrente_polidores_media',
+        ];
+
+        foreach ($tiposEquipamento as $tipo => $campo) {
+            if (!$colunasVisiveis[$tipo]) {
+                continue;
+            }
+
+            $totalPeriodos = 0;
+            $periodosLigados = 0;
+
+            foreach ($leituras as $leitura) {
+                if (!is_null($leitura->$campo)) {
+                    $totalPeriodos++;
+                    if ($leitura->$campo > 0) {
+                        $periodosLigados++;
+                    }
+                }
+            }
+
+            if ($totalPeriodos > 0) {
+                $disponibilidade[$tipo] = round(($periodosLigados / $totalPeriodos) * 100, 2);
+            }
+        }
+
+        return $disponibilidade;
     }
 
     public function agregar(Request $request)

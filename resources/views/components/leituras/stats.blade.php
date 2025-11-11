@@ -1,4 +1,4 @@
-@props(['leituras', 'colunasVisiveis'])
+@props(['leituras', 'colunasVisiveis', 'disponibilidade'])
 
 @php
     $stats = [
@@ -90,6 +90,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
+                @if(!is_null($disponibilidade['brunidores']))
+                <div class="flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $disponibilidade['brunidores'] >= 80 ? 'bg-green-100 text-green-700' : ($disponibilidade['brunidores'] >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }}">
+                    {{ number_format($disponibilidade['brunidores'], 1, ',', '.') }}%
+                </div>
+                @endif
             </div>
             <div>
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Brunidor</p>
@@ -116,6 +121,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
+                @if(!is_null($disponibilidade['descascadores']))
+                <div class="flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $disponibilidade['descascadores'] >= 80 ? 'bg-green-100 text-green-700' : ($disponibilidade['descascadores'] >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }}">
+                    {{ number_format($disponibilidade['descascadores'], 1, ',', '.') }}%
+                </div>
+                @endif
             </div>
             <div>
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Descascador</p>
@@ -142,6 +152,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
+                @if(!is_null($disponibilidade['polidores']))
+                <div class="flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $disponibilidade['polidores'] >= 80 ? 'bg-green-100 text-green-700' : ($disponibilidade['polidores'] >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700') }}">
+                    {{ number_format($disponibilidade['polidores'], 1, ',', '.') }}%
+                </div>
+                @endif
             </div>
             <div>
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Polidor</p>
