@@ -14,7 +14,7 @@ class LeiturasController extends Controller
     {
         $query = DB::table('dados_agregados');
 
-        // Aplica filtros com conversão de timezone
+        // Aplica filtros
         $this->applyFilters($query, $request);
 
         // Aplica limite de 1000 registros para evitar problemas de memória
@@ -79,13 +79,11 @@ class LeiturasController extends Controller
             $query->where('id_equipamento', $request->id_equipamento);
         }
         if ($request->filled('data_inicio')) {
-            // Converte a data de início para o início do dia em São Paulo e depois para UTC
-            $dataInicio = Carbon::parse($request->data_inicio, 'America/Sao_Paulo')->startOfDay()->utc();
+            $dataInicio = Carbon::parse($request->data_inicio)->startOfDay()->utc();
             $query->where('periodo_inicio', '>=', $dataInicio);
         }
         if ($request->filled('data_fim')) {
-            // Converte a data de fim para o final do dia em São Paulo e depois para UTC
-            $dataFim = Carbon::parse($request->data_fim, 'America/Sao_Paulo')->endOfDay()->utc();
+            $dataFim = Carbon::parse($request->data_fim)->endOfDay()->utc();
             $query->where('periodo_inicio', '<=', $dataFim);
         }
     }
@@ -187,12 +185,12 @@ class LeiturasController extends Controller
             return $leituras;
         }
 
-        $dataInicio = Carbon::parse($request->data_inicio, 'America/Sao_Paulo')->startOfDay();
-        $dataFim = Carbon::parse($request->data_fim, 'America/Sao_Paulo')->endOfDay();
+        $dataInicio = Carbon::parse($request->data_inicio)->startOfDay();
+        $dataFim = Carbon::parse($request->data_fim)->endOfDay();
 
         $leiturasIndexadas = [];
         foreach ($leituras as $leitura) {
-            $hora = Carbon::parse($leitura->periodo_inicio)->timezone('America/Sao_Paulo')->format('Y-m-d H:00:00');
+            $hora = Carbon::parse($leitura->periodo_inicio)->format('Y-m-d H:00:00');
             $leiturasIndexadas[$hora] = $leitura;
         }
 
@@ -305,7 +303,7 @@ class LeiturasController extends Controller
     {
         $query = DB::table('dados_agregados');
         
-        // Reutiliza a lógica de filtros com conversão de timezone
+        // Reutiliza a lógica de filtros
         $this->applyFilters($query, $request);
 
         $leituras = $query->orderBy('periodo_inicio')->get();

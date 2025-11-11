@@ -8,8 +8,8 @@
     {{-- Identificação --}}
     <td>{{ $l->id_cliente }}</td>
     <td>{{ $l->id_equipamento }}</td>
-    <td>{{ \Carbon\Carbon::parse($l->periodo_inicio)->timezone('America/Sao_Paulo')->format('d/m H:i') }}</td>
-    <td>{{ \Carbon\Carbon::parse($l->periodo_fim)->timezone('America/Sao_Paulo')->format('d/m H:i') }}</td>
+    <td>{{ \Carbon\Carbon::parse($l->periodo_inicio)->format('d/m H:i') }}</td>
+    <td>{{ \Carbon\Carbon::parse($l->periodo_fim)->format('d/m H:i') }}</td>
     <td>{{ $l->registros_contagem }}</td>
     
     {{-- Corrente Brunidores --}}
@@ -100,5 +100,5 @@
     @endif
 
     {{-- Data de Atualização --}}
-    <td class="text-nowrap">{{ \Carbon\Carbon::parse($l->updated_at)->timezone('America/Sao_Paulo')->format('d/m H:i:s') }}</td>
+    <td class="text-nowrap">{{ \Carbon\Carbon::parse($l->updated_at)->format('d/m H:i:s') }}</td>
 </tr>

@@ -54,7 +54,7 @@
                                 
                                 @if($ultimaAtualizacao)
                                     <p class="text-sm text-neutral-500 mt-0.5">
-                                        Última atualização: <span class="font-medium">{{ \Carbon\Carbon::parse($ultimaAtualizacao)->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</span>
+                                        Última atualização: <span class="font-medium">{{ \Carbon\Carbon::parse($ultimaAtualizacao)->format('d/m/Y H:i') }}</span>
                                         <span class="mx-2">|</span>
                                         Próxima em atualização em: <span id="countdown-timer" class="font-semibold text-primary-600">60</span>s
                                     </p>

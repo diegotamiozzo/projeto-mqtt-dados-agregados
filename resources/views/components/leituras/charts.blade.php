@@ -19,7 +19,6 @@
 
     foreach($leituras as $leitura) {
         $labels[] = \Carbon\Carbon::parse($leitura->periodo_inicio)
-            ->timezone('America/Sao_Paulo')
             ->format('d/m H:i');
 
         $brunidoresData[] = $leitura->corrente_brunidores_media;
