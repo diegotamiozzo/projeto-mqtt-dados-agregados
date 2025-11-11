@@ -239,7 +239,7 @@ class LeiturasController extends Controller
             $dataInicioFiltro = \Carbon\Carbon::parse($request->data_inicio)->startOfDay();
             $dataFimFiltro = \Carbon\Carbon::parse($request->data_fim)->endOfDay();
 
-            $diasDiferenca = $dataInicioFiltro->diffInDays($dataFimFiltro);
+            $diasDiferenca = ceil($dataInicioFiltro->diffInDays($dataFimFiltro, true));
             $horasDiferenca = ceil($dataInicioFiltro->diffInHours($dataFimFiltro, true));
 
             return [
