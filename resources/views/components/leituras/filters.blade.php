@@ -39,9 +39,9 @@
                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Data Início
+                Data Início <span class="text-red-600">*</span>
             </label>
-            <input type="date" name="data_inicio" id="data_inicio" value="{{ $filters['data_inicio'] ?? '' }}" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth bg-white text-neutral-900">
+            <input type="date" name="data_inicio" id="data_inicio" value="{{ $filters['data_inicio'] ?? '' }}" required class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth bg-white text-neutral-900">
         </div>
 
         <div>
@@ -49,9 +49,10 @@
                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Data Fim
+                Data Fim <span class="text-red-600">*</span>
             </label>
-            <input type="date" name="data_fim" id="data_fim" value="{{ $filters['data_fim'] ?? '' }}" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth bg-white text-neutral-900">
+            <input type="date" name="data_fim" id="data_fim" value="{{ $filters['data_fim'] ?? '' }}" required class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth bg-white text-neutral-900">
+            <p id="data_erro" class="text-red-600 text-sm mt-1 hidden">A data de fim não pode ser anterior à data de início</p>
         </div>
 
         <div class="pt-2 space-y-2">
@@ -74,6 +75,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const equipamentoContainer = document.getElementById('equipamentoContainer');
     const equipamentoSelect = document.getElementById('id_equipamento');
     const form = document.getElementById('filtrosForm');
+    const dataInicio = document.getElementById('data_inicio');
+    const dataFim = document.getElementById('data_fim');
+    const dataErro = document.getElementById('data_erro');
+
+    function validarDatas() {
+        if (dataInicio.value && dataFim.value) {
+            const inicio = new Date(dataInicio.value);
+            const fim = new Date(dataFim.value);
+
+            if (fim < inicio) {
+                dataErro.classList.remove('hidden');
+                dataFim.classList.add('border-red-500');
+                return false;
+            } else {
+                dataErro.classList.add('hidden');
+                dataFim.classList.remove('border-red-500');
+                return true;
+            }
+        }
+        return true;
+    }
+
+    dataInicio.addEventListener('change', function() {
+        if (dataFim.value) {
+            dataFim.setAttribute('min', this.value);
+            validarDatas();
+        } else {
+            dataFim.setAttribute('min', this.value);
+        }
+    });
+
+    dataFim.addEventListener('change', validarDatas);
+
+    if (dataInicio.value) {
+        dataFim.setAttribute('min', dataInicio.value);
+    }
+
+    form.addEventListener('submit', function(e) {
+        if (!validarDatas()) {
+            e.preventDefault();
+            dataFim.focus();
+        }
+    });
 
     clienteSelect.addEventListener('change', function() {
         if (this.value) {
