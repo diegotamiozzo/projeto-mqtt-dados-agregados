@@ -204,8 +204,8 @@ class LeiturasController extends Controller
                 $resultado->push($leiturasIndexadas[$chave]);
             } else {
                 $resultado->push((object)[
-                    'periodo_inicio' => $dataAtual->copy()->utc()->toDateTimeString(),
-                    'periodo_fim' => $dataAtual->copy()->addHour()->utc()->toDateTimeString(),
+                    'periodo_inicio' => $dataAtual->copy()->toDateTimeString(),
+                    'periodo_fim' => $dataAtual->copy()->addHour()->toDateTimeString(),
                     'corrente_brunidores_media' => null,
                     'corrente_descascadores_media' => null,
                     'corrente_polidores_media' => null,

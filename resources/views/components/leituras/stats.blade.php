@@ -81,17 +81,28 @@
 
     $statusProducao = [];
     foreach(['brunidores', 'descascadores', 'polidores'] as $tipo) {
-        if (!empty($values[$tipo]) && !is_null($stats[$tipo]['last']) && !is_null($stats[$tipo]['avg'])) {
-            $ultima = $stats[$tipo]['last'];
-            $media = $stats[$tipo]['avg'];
-            $diferencaPercentual = (($ultima - $media) / $media) * 100;
+        if (!empty($values[$tipo]) && !is_null($stats[$tipo]['last'])) {
+            $campo = 'corrente_' . $tipo . '_media';
 
-            if ($diferencaPercentual < -20) {
-                $statusProducao[$tipo] = ['status' => 'leve', 'color' => 'blue', 'label' => 'Leve'];
-            } elseif ($diferencaPercentual > 20) {
-                $statusProducao[$tipo] = ['status' => 'pesada', 'color' => 'orange', 'label' => 'Pesada'];
-            } else {
-                $statusProducao[$tipo] = ['status' => 'normal', 'color' => 'green', 'label' => 'Normal'];
+            $valoresUltimaHora = [];
+            foreach($leituras->take(1) as $leitura) {
+                if (!is_null($leitura->$campo)) {
+                    $valoresUltimaHora[] = $leitura->$campo;
+                }
+            }
+
+            if (!empty($valoresUltimaHora)) {
+                $mediaUltimaHora = array_sum($valoresUltimaHora) / count($valoresUltimaHora);
+                $mediaGeral = $stats[$tipo]['avg'];
+                $diferencaPercentual = (($mediaUltimaHora - $mediaGeral) / $mediaGeral) * 100;
+
+                if ($diferencaPercentual < -20) {
+                    $statusProducao[$tipo] = ['status' => 'leve', 'color' => 'blue', 'label' => 'Leve', 'ultima_hora' => $mediaUltimaHora];
+                } elseif ($diferencaPercentual > 20) {
+                    $statusProducao[$tipo] = ['status' => 'pesada', 'color' => 'orange', 'label' => 'Pesada', 'ultima_hora' => $mediaUltimaHora];
+                } else {
+                    $statusProducao[$tipo] = ['status' => 'normal', 'color' => 'green', 'label' => 'Normal', 'ultima_hora' => $mediaUltimaHora];
+                }
             }
         }
     }
@@ -139,8 +150,8 @@
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Brunidor - Produção</p>
                 <p class="text-3xl font-bold text-{{ $status['color'] }}-600 mb-3">{{ $status['label'] }}</p>
                 <div class="text-xs text-neutral-600">
-                    <p>Última: {{ number_format($stats['brunidores']['last'], 2, ',', '.') }} A</p>
-                    <p>Média: {{ number_format($stats['brunidores']['avg'], 2, ',', '.') }} A</p>
+                    <p>Última hora: {{ number_format($status['ultima_hora'], 2, ',', '.') }} A</p>
+                    <p>Média geral: {{ number_format($stats['brunidores']['avg'], 2, ',', '.') }} A</p>
                 </div>
             </div>
         </div>
@@ -209,8 +220,8 @@
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Descascador - Produção</p>
                 <p class="text-3xl font-bold text-{{ $status['color'] }}-600 mb-3">{{ $status['label'] }}</p>
                 <div class="text-xs text-neutral-600">
-                    <p>Última: {{ number_format($stats['descascadores']['last'], 2, ',', '.') }} A</p>
-                    <p>Média: {{ number_format($stats['descascadores']['avg'], 2, ',', '.') }} A</p>
+                    <p>Última hora: {{ number_format($status['ultima_hora'], 2, ',', '.') }} A</p>
+                    <p>Média geral: {{ number_format($stats['descascadores']['avg'], 2, ',', '.') }} A</p>
                 </div>
             </div>
         </div>
@@ -279,8 +290,8 @@
                 <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Polidor - Produção</p>
                 <p class="text-3xl font-bold text-{{ $status['color'] }}-600 mb-3">{{ $status['label'] }}</p>
                 <div class="text-xs text-neutral-600">
-                    <p>Última: {{ number_format($stats['polidores']['last'], 2, ',', '.') }} A</p>
-                    <p>Média: {{ number_format($stats['polidores']['avg'], 2, ',', '.') }} A</p>
+                    <p>Última hora: {{ number_format($status['ultima_hora'], 2, ',', '.') }} A</p>
+                    <p>Média geral: {{ number_format($stats['polidores']['avg'], 2, ',', '.') }} A</p>
                 </div>
             </div>
         </div>
