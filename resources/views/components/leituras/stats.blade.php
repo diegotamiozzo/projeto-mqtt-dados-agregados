@@ -82,14 +82,14 @@
     $statusProducao = [];
     foreach(['brunidores', 'descascadores', 'polidores'] as $tipo) {
         if (!empty($values[$tipo]) && !is_null($stats[$tipo]['last'])) {
-            $campo = 'corrente_' . $tipo . '_media';
-
-            $ultimaMedida = $stats[$tipo]['last'];
+            $campoMedia = 'corrente_' . $tipo . '_media';
+            $campoUltima = 'corrente_' . $tipo . '_ultima';
 
             $primeiraLeitura = $leituras->first();
-            $mediaUltimaHora = $primeiraLeitura ? $primeiraLeitura->$campo : null;
+            $ultimaMedida = $primeiraLeitura ? $primeiraLeitura->$campoUltima : null;
+            $mediaUltimaHora = $primeiraLeitura ? $primeiraLeitura->$campoMedia : null;
 
-            if (!is_null($mediaUltimaHora) && $mediaUltimaHora > 0) {
+            if (!is_null($ultimaMedida) && !is_null($mediaUltimaHora) && $mediaUltimaHora > 0) {
                 $diferencaPercentual = (($ultimaMedida - $mediaUltimaHora) / $mediaUltimaHora) * 100;
 
                 if ($diferencaPercentual < -20) {
