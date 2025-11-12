@@ -19,46 +19,68 @@
     ];
 
     $values = [
-        'brunidores' => [],
-        'descascadores' => [],
-        'polidores' => [],
-        'temperatura' => [],
-        'umidade' => [],
-        'tensao_r' => [],
-        'tensao_s' => [],
-        'tensao_t' => [],
-        'corrente_r' => [],
-        'corrente_s' => [],
-        'corrente_t' => [],
-        'potencia_ativa' => [],
-        'potencia_reativa' => [],
-        'fator_potencia' => [],
+        'brunidores_min' => [], 'brunidores_max' => [], 'brunidores_avg' => [],
+        'descascadores_min' => [], 'descascadores_max' => [], 'descascadores_avg' => [],
+        'polidores_min' => [], 'polidores_max' => [], 'polidores_avg' => [],
+        'temperatura_min' => [], 'temperatura_max' => [], 'temperatura_avg' => [],
+        'umidade_min' => [], 'umidade_max' => [], 'umidade_avg' => [],
+        'tensao_r_min' => [], 'tensao_r_max' => [], 'tensao_r_avg' => [],
+        'tensao_s_min' => [], 'tensao_s_max' => [], 'tensao_s_avg' => [],
+        'tensao_t_min' => [], 'tensao_t_max' => [], 'tensao_t_avg' => [],
+        'corrente_r_min' => [], 'corrente_r_max' => [], 'corrente_r_avg' => [],
+        'corrente_s_min' => [], 'corrente_s_max' => [], 'corrente_s_avg' => [],
+        'corrente_t_min' => [], 'corrente_t_max' => [], 'corrente_t_avg' => [],
+        'potencia_ativa_min' => [], 'potencia_ativa_max' => [], 'potencia_ativa_avg' => [],
+        'potencia_reativa_min' => [], 'potencia_reativa_max' => [], 'potencia_reativa_avg' => [],
+        'fator_potencia_min' => [], 'fator_potencia_max' => [], 'fator_potencia_avg' => [],
     ];
 
     $ultimaLeitura = $leituras->first();
 
     foreach($leituras as $leitura) {
-        if (!is_null($leitura->corrente_brunidores_media)) $values['brunidores'][] = $leitura->corrente_brunidores_media;
-        if (!is_null($leitura->corrente_descascadores_media)) $values['descascadores'][] = $leitura->corrente_descascadores_media;
-        if (!is_null($leitura->corrente_polidores_media)) $values['polidores'][] = $leitura->corrente_polidores_media;
-        if (!is_null($leitura->temperatura_media)) $values['temperatura'][] = $leitura->temperatura_media;
-        if (!is_null($leitura->umidade_media)) $values['umidade'][] = $leitura->umidade_media;
-        if (!is_null($leitura->tensao_r_media)) $values['tensao_r'][] = $leitura->tensao_r_media;
-        if (!is_null($leitura->tensao_s_media)) $values['tensao_s'][] = $leitura->tensao_s_media;
-        if (!is_null($leitura->tensao_t_media)) $values['tensao_t'][] = $leitura->tensao_t_media;
-        if (!is_null($leitura->corrente_r_media)) $values['corrente_r'][] = $leitura->corrente_r_media;
-        if (!is_null($leitura->corrente_s_media)) $values['corrente_s'][] = $leitura->corrente_s_media;
-        if (!is_null($leitura->corrente_t_media)) $values['corrente_t'][] = $leitura->corrente_t_media;
-        if (!is_null($leitura->potencia_ativa_media)) $values['potencia_ativa'][] = $leitura->potencia_ativa_media;
-        if (!is_null($leitura->potencia_reativa_media)) $values['potencia_reativa'][] = $leitura->potencia_reativa_media;
-        if (!is_null($leitura->fator_potencia_media)) $values['fator_potencia'][] = $leitura->fator_potencia_media;
+        if ($colunasVisiveis['brunidores']) {
+            if (!is_null($leitura->corrente_brunidores_min)) $values['brunidores_min'][] = $leitura->corrente_brunidores_min;
+            if (!is_null($leitura->corrente_brunidores_max)) $values['brunidores_max'][] = $leitura->corrente_brunidores_max;
+            if (!is_null($leitura->corrente_brunidores_media)) $values['brunidores_avg'][] = $leitura->corrente_brunidores_media;
+        }
+        if ($colunasVisiveis['descascadores']) {
+            if (!is_null($leitura->corrente_descascadores_min)) $values['descascadores_min'][] = $leitura->corrente_descascadores_min;
+            if (!is_null($leitura->corrente_descascadores_max)) $values['descascadores_max'][] = $leitura->corrente_descascadores_max;
+            if (!is_null($leitura->corrente_descascadores_media)) $values['descascadores_avg'][] = $leitura->corrente_descascadores_media;
+        }
+        if ($colunasVisiveis['polidores']) {
+            if (!is_null($leitura->corrente_polidores_min)) $values['polidores_min'][] = $leitura->corrente_polidores_min;
+            if (!is_null($leitura->corrente_polidores_max)) $values['polidores_max'][] = $leitura->corrente_polidores_max;
+            if (!is_null($leitura->corrente_polidores_media)) $values['polidores_avg'][] = $leitura->corrente_polidores_media;
+        }
+        if ($colunasVisiveis['temperatura']) {
+            if (!is_null($leitura->temperatura_min)) $values['temperatura_min'][] = $leitura->temperatura_min;
+            if (!is_null($leitura->temperatura_max)) $values['temperatura_max'][] = $leitura->temperatura_max;
+            if (!is_null($leitura->temperatura_media)) $values['temperatura_avg'][] = $leitura->temperatura_media;
+        }
+        if ($colunasVisiveis['umidade']) {
+            if (!is_null($leitura->umidade_min)) $values['umidade_min'][] = $leitura->umidade_min;
+            if (!is_null($leitura->umidade_max)) $values['umidade_max'][] = $leitura->umidade_max;
+            if (!is_null($leitura->umidade_media)) $values['umidade_avg'][] = $leitura->umidade_media;
+        }
+        if ($colunasVisiveis['grandezas_eletricas']) {
+            foreach(['tensao_r', 'tensao_s', 'tensao_t', 'corrente_r', 'corrente_s', 'corrente_t', 'potencia_ativa', 'potencia_reativa', 'fator_potencia'] as $field) {
+                if (!is_null($leitura->{$field.'_min'})) $values[$field.'_min'][] = $leitura->{$field.'_min'};
+                if (!is_null($leitura->{$field.'_max'})) $values[$field.'_max'][] = $leitura->{$field.'_max'};
+                if (!is_null($leitura->{$field.'_media'})) $values[$field.'_avg'][] = $leitura->{$field.'_media'};
+            }
+        }
     }
 
-    foreach($values as $key => $arr) {
-        if (!empty($arr)) {
-            $stats[$key]['min'] = min($arr);
-            $stats[$key]['max'] = max($arr);
-            $stats[$key]['avg'] = array_sum($arr) / count($arr);
+    foreach($stats as $key => $stat) {
+        if (!empty($values[$key.'_min'])) {
+            $stats[$key]['min'] = min($values[$key.'_min']);
+        }
+        if (!empty($values[$key.'_max'])) {
+            $stats[$key]['max'] = max($values[$key.'_max']);
+        }
+        if (!empty($values[$key.'_avg'])) {
+            $stats[$key]['avg'] = array_sum($values[$key.'_avg']) / count($values[$key.'_avg']);
         }
     }
 
@@ -81,7 +103,7 @@
 
     $statusProducao = [];
     foreach(['brunidores', 'descascadores', 'polidores'] as $tipo) {
-        if (!empty($values[$tipo]) && !is_null($stats[$tipo]['last'])) {
+        if (!empty($values[$tipo.'_avg']) && !is_null($stats[$tipo]['last'])) {
             $campoMedia = 'corrente_' . $tipo . '_media';
             $campoUltima = 'corrente_' . $tipo . '_ultima';
 
@@ -106,7 +128,7 @@
 
 <div class="overflow-x-auto pb-4">
     <div class="flex gap-4 min-w-max">
-        @if($colunasVisiveis['brunidores'] && !empty($values['brunidores']))
+        @if($colunasVisiveis['brunidores'] && !empty($values['brunidores_avg']))
         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
             <div class="flex items-start justify-between mb-3">
                 <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
@@ -176,7 +198,7 @@
         @endif
         @endif
 
-        @if($colunasVisiveis['descascadores'] && !empty($values['descascadores']))
+        @if($colunasVisiveis['descascadores'] && !empty($values['descascadores_avg']))
         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
             <div class="flex items-start justify-between mb-3">
                 <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
@@ -246,7 +268,7 @@
         @endif
         @endif
 
-        @if($colunasVisiveis['polidores'] && !empty($values['polidores']))
+        @if($colunasVisiveis['polidores'] && !empty($values['polidores_avg']))
         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
             <div class="flex items-start justify-between mb-3">
                 <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
@@ -316,7 +338,7 @@
         @endif
         @endif
 
-        @if($colunasVisiveis['temperatura'] && !empty($values['temperatura']))
+        @if($colunasVisiveis['temperatura'] && !empty($values['temperatura_avg']))
         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
             <div class="flex items-start justify-between mb-3">
                 <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
@@ -342,7 +364,7 @@
         </div>
         @endif
 
-        @if($colunasVisiveis['umidade'] && !empty($values['umidade']))
+        @if($colunasVisiveis['umidade'] && !empty($values['umidade_avg']))
         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
             <div class="flex items-start justify-between mb-3">
                 <div class="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center">
@@ -371,8 +393,8 @@
         @if($colunasVisiveis['grandezas_eletricas'])
             <div id="grandezas-cards" class="flex gap-4">
                 <div id="card-tensao" class="hidden">
-                    <div class="flex gap-4">
-                        @if(!empty($values['tensao_r']))
+                    <div class="flex gap-4 min-w-max">
+                        @if(!empty($values['tensao_r_avg']))
                         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
@@ -397,7 +419,7 @@
                             </div>
                         </div>
                         @endif
-                        @if(!empty($values['tensao_s']))
+                        @if(!empty($values['tensao_s_avg']))
                         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
@@ -422,7 +444,7 @@
                             </div>
                         </div>
                         @endif
-                        @if(!empty($values['tensao_t']))
+                        @if(!empty($values['tensao_t_avg']))
                         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
@@ -451,8 +473,8 @@
                 </div>
 
                 <div id="card-corrente" class="hidden">
-                    <div class="flex gap-4">
-                        @if(!empty($values['corrente_r']))
+                    <div class="flex gap-4 min-w-max">
+                        @if(!empty($values['corrente_r_avg']))
                         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
@@ -477,7 +499,7 @@
                             </div>
                         </div>
                         @endif
-                        @if(!empty($values['corrente_s']))
+                        @if(!empty($values['corrente_s_avg']))
                         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
@@ -502,7 +524,7 @@
                             </div>
                         </div>
                         @endif
-                        @if(!empty($values['corrente_t']))
+                        @if(!empty($values['corrente_t_avg']))
                         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
@@ -531,8 +553,8 @@
                 </div>
 
                 <div id="card-potencia" class="hidden">
-                    <div class="flex gap-4">
-                        @if(!empty($values['potencia_ativa']))
+                    <div class="flex gap-4 min-w-max">
+                        @if(!empty($values['potencia_ativa_avg']))
                         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
@@ -557,7 +579,7 @@
                             </div>
                         </div>
                         @endif
-                        @if(!empty($values['potencia_reativa']))
+                        @if(!empty($values['potencia_reativa_avg']))
                         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
@@ -586,8 +608,8 @@
                 </div>
 
                 <div id="card-fator" class="hidden">
-                    <div class="flex gap-4">
-                        @if(!empty($values['fator_potencia']))
+                    <div class="flex gap-4 min-w-max">
+                        @if(!empty($values['fator_potencia_avg']))
                         <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
                             <div class="flex items-start justify-between mb-3">
                                 <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
@@ -623,6 +645,7 @@
     window.switchGrandezasCards = function(tipo) {
         ['tensao', 'corrente', 'potencia', 'fator'].forEach(t => {
             const card = document.getElementById(`card-${t}`);
+            const cardContent = card.querySelector('.flex');
             if (card) {
                 if (t === tipo) {
                     card.classList.remove('hidden');
