@@ -76,7 +76,7 @@
                     </div>
                 @endif
 
-                @if($totalLeituras > 0 && isset($filters['id_equipamento']) && !empty($filters['id_equipamento']) && $periodoInfo)
+                   @if($totalLeituras > 0 && isset($filters['id_equipamento']) && !empty($filters['id_equipamento']) && $periodoInfo)
                     <p class="text-neutral-600 mb-6">
                         Exibindo <span class="font-semibold text-neutral-900">{{ $periodoInfo['totalRegistros'] }}</span> {{ $periodoInfo['totalRegistros'] == 1 ? 'hora' : 'horas' }} de produção
                         de <span class="font-semibold text-neutral-900">{{ $periodoInfo['dataInicio'] }}</span>
@@ -105,8 +105,11 @@
                         </div>
                     @endif
                 @else
-                    <div class="bg-primary-50 border border-primary-200 text-primary-800 px-4 py-3 rounded-lg">
-                        Selecione um equipamento para visualizar os dados em gráficos.
+                    <div class="text-center py-40 px-6">
+                        <p class="text-lg font-medium text-primary-800">
+                            Selecione um equipamento para visualizar os dados em gráficos.
+                        </p>
+                        <img src="{{ asset('images/marca-tecnoeletro.png') }}" alt="Logo Tecnoeletro" class="mx-auto h-24 w-auto mt-12 opacity-70">
                     </div>
                 @endif
             </main>

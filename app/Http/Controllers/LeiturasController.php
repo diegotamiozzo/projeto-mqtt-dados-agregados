@@ -302,36 +302,81 @@ class LeiturasController extends Controller
     public function exportar(Request $request)
     {
         $query = DB::table('dados_agregados');
-        
-        // Reutiliza a lógica de filtros
         $this->applyFilters($query, $request);
-
-        $leituras = $query->orderBy('periodo_inicio')->get();
+    
+        // Primeiro, obtemos uma amostra para detectar colunas visíveis
+        $leiturasParaDeteccao = $query->limit(1000)->get();
+        $colunasVisiveis = $this->detectarColunasVisiveis($leiturasParaDeteccao);
+    
+        // Define as colunas base que sempre serão exportadas
+        $colunasParaExportar = [
+            'id_cliente', 'id_equipamento', 'periodo_inicio', 'periodo_fim', 'registros_contagem'
+        ];
+    
+        // Mapeia os grupos de colunas
+        $gruposDeColunas = [
+            'brunidores' => ['corrente_brunidores_media', 'corrente_brunidores_max', 'corrente_brunidores_min', 'corrente_brunidores_ultima'],
+            'descascadores' => ['corrente_descascadores_media', 'corrente_descascadores_max', 'corrente_descascadores_min', 'corrente_descascadores_ultima'],
+            'polidores' => ['corrente_polidores_media', 'corrente_polidores_max', 'corrente_polidores_min', 'corrente_polidores_ultima'],
+            'temperatura' => ['temperatura_media', 'temperatura_max', 'temperatura_min', 'temperatura_ultima'],
+            'umidade' => ['umidade_media', 'umidade_max', 'umidade_min', 'umidade_ultima'],
+            'grandezas_eletricas' => [
+                'tensao_r_media', 'tensao_r_max', 'tensao_r_min', 'tensao_r_ultima',
+                'corrente_r_media', 'corrente_r_max', 'corrente_r_min', 'corrente_r_ultima',
+                'tensao_s_media', 'tensao_s_max', 'tensao_s_min', 'tensao_s_ultima',
+                'corrente_s_media', 'corrente_s_max', 'corrente_s_min', 'corrente_s_ultima',
+                'tensao_t_media', 'tensao_t_max', 'tensao_t_min', 'tensao_t_ultima',
+                'corrente_t_media', 'corrente_t_max', 'corrente_t_min', 'corrente_t_ultima',
+                'potencia_ativa_media', 'potencia_ativa_max', 'potencia_ativa_min', 'potencia_ativa_ultima',
+                'potencia_reativa_media', 'potencia_reativa_max', 'potencia_reativa_min', 'potencia_reativa_ultima',
+                'fator_potencia_media', 'fator_potencia_max', 'fator_potencia_min', 'fator_potencia_ultima',
+            ]
+        ];
+    
+        // Adiciona colunas relevantes com base nos dados encontrados
+        foreach ($gruposDeColunas as $grupo => $colunas) {
+            if ($colunasVisiveis[$grupo]) {
+                $colunasParaExportar = array_merge($colunasParaExportar, $colunas);
+            }
+        }
+    
+        // Adiciona a coluna de timestamp no final
+        $colunasParaExportar[] = 'updated_at';
+    
+        // Refaz a query selecionando apenas as colunas necessárias
+        $queryExport = DB::table('dados_agregados')
+            ->select($colunasParaExportar)
+            ->orderBy('periodo_inicio');
+    
+        $this->applyFilters($queryExport, $request);
+    
+        $leituras = $queryExport->get();
+    
         $nomeArquivo = 'dados_agregados_' . date('Y-m-d_H-i-s') . '.csv';
-
+    
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $nomeArquivo . '"',
         ];
-
-        $callback = function () use ($leituras) {
+    
+        $callback = function () use ($leituras, $colunasParaExportar) {
             $file = fopen('php://output', 'w');
             
+            // Adiciona BOM para garantir a codificação correta no Excel
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
+    
             if ($leituras->isNotEmpty()) {
-                $primeiraLeitura = (array) $leituras->first();
-                $colunas = array_keys($primeiraLeitura);
-                fputcsv($file, $colunas, ';');
+                // Usa a lista de colunas selecionadas para o cabeçalho
+                fputcsv($file, $colunasParaExportar, ';');
             }
-
+    
             foreach ($leituras as $leitura) {
                 fputcsv($file, (array) $leitura, ';');
             }
-
+    
             fclose($file);
         };
-
+    
         return response()->stream($callback, 200, $headers);
     }
 }
