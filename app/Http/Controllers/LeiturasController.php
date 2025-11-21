@@ -279,9 +279,16 @@ class LeiturasController extends Controller
             '--periodo' => 'hora'
         ]);
 
-        // Monta os parâmetros de query para manter os filtros
         $queryParams = [];
-        
+
+        if ($request->filled('token') || session('auth_token')) {
+            $queryParams['token'] = $request->token ?? session('auth_token');
+        }
+
+        if ($request->filled('email') || session('user_email')) {
+            $queryParams['email'] = $request->email ?? session('user_email');
+        }
+
         if ($request->filled('id_cliente')) {
             $queryParams['id_cliente'] = $request->id_cliente;
         }

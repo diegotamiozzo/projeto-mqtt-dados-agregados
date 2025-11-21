@@ -1,3 +1,4 @@
+{{-- resources/views/components/leituras/table.blade.php --}}
 @props(['leituras', 'colunasVisiveis'])
 
 <div class="table-responsive">

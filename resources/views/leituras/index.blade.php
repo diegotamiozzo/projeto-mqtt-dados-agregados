@@ -1,141 +1,66 @@
+{{-- resources/views/leituras/index.blade.php --}}
 <x-layout title="Monitoramento de Equipamentos">
-    <div class="min-h-screen flex">
+    <div class="container-fluid mt-4">
 
-        <!-- Sidebar -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
-
-            <!-- Cabeçalho da Sidebar -->
-            <div class="bg-gradient-to-br from-primary-600 to-primary-700 text-white p-4 flex flex-col items-center text-center">
-                
-                <!-- Logo + botão fechar -->
-                <div class="w-full flex justify-between items-start mb-2">
-                    <img src="{{ asset('images/logo-branco.png') }}" alt="Logo" class="h-12 w-auto mx-auto block">
-                    
-                    <button onclick="toggleSidebar()" class="lg:hidden text-white hover:bg-primary-500 p-2 rounded-lg transition-smooth -mr-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Link do site -->
-                <a href="https://www.tecnoeletro.com" target="_blank" class="text-sm font-medium text-white hover:underline block">
-                    www.tecnoeletro.com
-                </a>
-            </div>
-
-            <!-- Conteúdo -->
-            <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                <x-leituras.filters :clientes="$clientes" :equipamentos="$equipamentos" :filters="$filters" />
-                <x-leituras.actions />
-            </div>
-        </aside>
-        
-        <!-- Overlay for mobile -->
-        <div id="sidebarOverlay" class="fixed inset-0 bg-neutral-900 bg-opacity-50 z-40 lg:hidden opacity-0 invisible transition-all duration-300"></div>
-        <!-- Main Content -->
-        <div class="flex-1 lg:ml-80">
-            <!-- Floating Header -->
-            <header id="floatingHeader" class="sticky top-0 z-30 bg-white border-b border-neutral-200 shadow-sm transition-transform duration-300">
-                <div class="px-4 lg:px-8 py-4">
-                    <div class="flex items-center justify-between">
-                        <!-- Mobile Menu Button -->
-                        <button onclick="toggleSidebar()" class="lg:hidden text-neutral-600 hover:text-primary-600 p-2 hover:bg-neutral-100 rounded-lg transition-smooth">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-
-                        <!-- Title -->
-                        <div class="flex items-center space-x-4">
-                            <img src="{{ asset('images/icone.png') }}" alt="Logo" class="h-12 w-auto">
-                                <div>
-                                <h1 class="text-xl lg:text-2xl font-bold text-neutral-900">Monitore seus Equipamentos em Tempo Real</h1>
-                                
-                                @if($ultimaAtualizacao)
-                                    <p class="text-sm text-neutral-500 mt-0.5">
-                                        Última atualização: <span class="font-medium">{{ \Carbon\Carbon::parse($ultimaAtualizacao)->format('d/m/Y H:i') }}</span>
-                                        <span class="mx-2">|</span>
-                                        Próxima em atualização em: <span id="countdown-timer" class="font-semibold text-primary-600">60</span>s
-                                    </p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Main Content Area -->
-            <main class="p-4 lg:p-8">
-                @if(session('success'))
-                    <div id="success-alert" class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center transition-smooth shadow-sm">
-                        <svg class="w-5 h-5 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{{ session('success') }}</span>
-                    </div>
-                @endif
-
-                   @if($totalLeituras > 0 && isset($filters['id_equipamento']) && !empty($filters['id_equipamento']) && $periodoInfo)
-                    <p class="text-neutral-600 mb-6">
-                        Exibindo <span class="font-semibold text-neutral-900">{{ $periodoInfo['totalRegistros'] }}</span> {{ $periodoInfo['totalRegistros'] == 1 ? 'hora' : 'horas' }} de produção
-                        de <span class="font-semibold text-neutral-900">{{ $periodoInfo['dataInicio'] }}</span>
-                        até <span class="font-semibold text-neutral-900">{{ $periodoInfo['dataFim'] }}</span>
-                        ({{ $periodoInfo['dias'] }} {{ $periodoInfo['dias'] == 1 ? 'dia' : 'dias' }})
-                    </p>
-                @elseif($totalLeituras == 0)
-                    <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-6">
-                        Nenhum dado para exibir. Clique em "Atualizar" para processar.
-                    </div>
-                @endif
-
-                @if(isset($filters['id_equipamento']) && !empty($filters['id_equipamento']))
-                    @if($leituras->isNotEmpty())
-                        <!-- Stats Cards -->
-                        <div class="mb-8">
-                            <h2 class="text-lg font-semibold text-neutral-900 mb-4">Estatísticas Resumidas - {{ $nomeEquipamento }}</h2>
-                            <x-leituras.stats :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" :disponibilidade="$disponibilidade" />
-                        </div>
-
-                        <!-- Charts -->
-                        <x-leituras.charts :leituras="$leiturasGrafico" :colunasVisiveis="$colunasVisiveis" :nomeEquipamento="$nomeEquipamento" />
-                    @else
-                        <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
-                            Nenhum dado encontrado para o equipamento selecionado e filtros aplicados.
-                        </div>
-                    @endif
-                @else
-                    <div class="text-center py-40 px-6">
-                        <p class="text-lg font-medium text-primary-800">
-                            Selecione um equipamento para visualizar os dados em gráficos.
-                        </p>
-                        <img src="{{ asset('images/marca-tecnoeletro.png') }}" alt="Logo Tecnoeletro" class="mx-auto h-24 w-auto mt-12 opacity-70">
-                    </div>
-                @endif
-            </main>
+        {{-- 1. CABEÇALHO E ALERTAS --}}
+        <div class="d-flex align-items-center mb-4">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo da Empresa" style="height: 60px; margin-right: 15px;">
+            <h1 class="mb-0">Monitoramento de Equipamentos</h1>
         </div>
+
+        @if($totalLeituras > 0)
+            <p class="text-muted">Exibindo as últimas {{ $totalLeituras }} horas de dados.</p>
+        @else
+            <p class="text-muted">Nenhum dado para exibir. Clique em "Atualizar" para processar.</p>
+        @endif
+
+        @if($ultimaAtualizacao)
+            <p class="text-muted mb-1">
+                Última atualização: <strong>{{ \Carbon\Carbon::parse($ultimaAtualizacao)->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</strong>
+            </p>
+            <p class="text-muted">
+                Próxima atualização em: <strong id="countdown-timer" class="text-primary">60</strong> segundos
+            </p>
+        @endif
+
+        @if(session('success'))
+            <div class="alert alert-success" id="success-alert">{{ session('success') }}</div>
+        @endif
+
+        
+        {{-- 2. COMPONENTE DE FILTROS --}}
+        <x-leituras.filters 
+            :clientes="$clientes" 
+            :equipamentos="$equipamentos" 
+            :filters="$filters" 
+        />
+
+        {{-- 3. COMPONENTE DE AÇÕES --}}
+        <x-leituras.actions />
+
+        {{-- 4. COMPONENTE DA TABELA --}}
+        @if(isset($filters['id_equipamento']) && !empty($filters['id_equipamento']))
+            @if($leituras->isNotEmpty())
+                {{-- Badge informativo das colunas visíveis --}}
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <strong>Colunas exibidas:</strong>
+                        @if($colunasVisiveis['brunidores']) <span class="badge bg-primary">Brunidores</span> @endif
+                        @if($colunasVisiveis['descascadores']) <span class="badge bg-info">Descascadores</span> @endif
+                        @if($colunasVisiveis['polidores']) <span class="badge bg-warning">Polidores</span> @endif
+                        @if($colunasVisiveis['temperatura']) <span class="badge bg-success">Temperatura</span> @endif
+                        @if($colunasVisiveis['umidade']) <span class="badge bg-danger">Umidade</span> @endif
+                        @if($colunasVisiveis['grandezas_eletricas']) <span class="badge bg-secondary">Grandezas Elétricas</span> @endif
+                    </small>
+                </div>
+                
+                <x-leituras.table :leituras="$leituras" :colunasVisiveis="$colunasVisiveis" />
+            @else
+                <p class="alert alert-warning">Nenhum dado encontrado para o equipamento selecionado e filtros aplicados.</p>
+            @endif
+        @else
+            <p class="alert alert-info">Selecione um equipamento para visualizar os dados na tabela.</p>
+        @endif
+
     </div>
-
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('opacity-0');
-            overlay.classList.toggle('invisible');
-        }
-
-        let lastScrollTop = 0;
-        const header = document.getElementById('floatingHeader');
-
-        window.addEventListener('scroll', function() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                header.style.transform = 'translateY(-100%)';
-            } else {
-                header.style.transform = 'translateY(0)';
-            }
-            lastScrollTop = scrollTop;
-        });
-    </script>
 </x-layout>
