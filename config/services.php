@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    // --- ADICIONADO PARA O SEU MIDDLEWARE ---
+    'external_access' => [
+        'token' => env('ACCESS_TOKEN'),
+    ],
+
 ];
