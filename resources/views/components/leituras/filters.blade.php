@@ -4,6 +4,27 @@
     <h3 class="text-sm font-semibold text-neutral-700 uppercase tracking-wide">Filtros</h3>
 
     <form method="GET" action="{{ route('leituras.index') }}" class="space-y-4" id="filtrosForm">
+        <!-- Campo de E-mail do Usuário -->
+        @auth
+        <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
+            <label class="block text-xs font-medium text-primary-700 uppercase tracking-wide mb-2">
+                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Usuário Logado
+            </label>
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span class="text-sm font-semibold text-primary-900">{{ auth()->user()->email }}</span>
+            </div>
+            @if(auth()->user()->name)
+            <p class="text-xs text-primary-600 mt-1 ml-7">{{ auth()->user()->name }}</p>
+            @endif
+        </div>
+        @endauth
+
         <div>
             <label for="id_cliente" class="block text-sm font-medium text-neutral-700 mb-2">
                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
