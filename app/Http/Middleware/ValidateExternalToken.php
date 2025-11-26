@@ -10,95 +10,73 @@ use App\Models\User;
 
 class ValidateExternalToken
 {
-    /**
-     * Manipula a requisição de entrada.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle(Request $request, Closure $next)
     {
-        // 1. Captura os parâmetros da URL (token e dados)
         $tokenFromUrl = $request->query('token', '');
         $dataEncoded  = $request->query('data', '');
 
-        // 2. Obtém a chave secreta do arquivo de configuração
-        // (Certifique-se de ter configurado 'external_access' no config/services.php)
-        $secret = config('services.external_access.token');
-
-        // --- VALIDAÇÕES BÁSICAS ---
-        
+        // --- Token obrigatório ---
         if (empty($tokenFromUrl) || empty($dataEncoded)) {
+            // Se usuário já logado, deixa passar
+            if (Auth::check() && Auth::user()->external_client_id) {
+                return $next($request);
+            }
             return response("Acesso negado: parâmetros ausentes (token ou data).", 401);
         }
 
-        // Tenta decodificar o Base64
+        // --- Decodifica dados ---
         $jsonData = base64_decode($dataEncoded, true);
-        if ($jsonData === false) {
-            return response("Acesso negado: dados Base64 inválidos.", 401);
-        }
-
-        // Converte JSON para Array associativo
         $data = json_decode($jsonData, true);
-        if (!is_array($data)) {
+        if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
             return response("Acesso negado: JSON inválido.", 401);
         }
 
-        // --- SEGURANÇA (HASH HMAC) ---
-
-        // 3. Valida a Assinatura
-        // Recria o hash usando os dados recebidos + a senha local para ver se bate com o token da URL
+        // --- Valida HMAC ---
+        $secret = config('services.external_access.token');
         $expectedToken = hash_hmac('sha256', $dataEncoded, $secret);
-
         if (!hash_equals($expectedToken, $tokenFromUrl)) {
             return response("Acesso negado: token inválido ou assinatura incorreta.", 401);
         }
 
-        // 4. Valida Expiração (Link válido por 5 minutos)
+        // --- Valida expiração ---
         if (!isset($data['timestamp']) || (time() - intval($data['timestamp'])) > 300) {
             return response("Acesso expirado (link antigo). Atualize a página anterior.", 401);
         }
 
-        // --- LÓGICA PRINCIPAL: LOGIN OU CRIAÇÃO (AUTO-CADASTRO) ---
-
+        // --- Procura ou cria usuário ---
         if (isset($data['email'])) {
-            // Tenta encontrar o usuário pelo e-mail
             $user = User::where('email', $data['email'])->first();
-
-            // Recupera o ID do cliente que veio do App 1 (scope_id)
             $externalClientId = $data['scope_id'] ?? null;
 
             if ($user) {
-                // CENÁRIO A: Usuário JÁ EXISTE
-                // Atualizamos o nome e o vínculo do cliente para garantir que ele veja os dados certos
-                $user->update([
-                    'name' => $data['name'] ?? $user->name,
+                $user->name = $data['name'] ?? $user->name;
+                if ($externalClientId) {
+                    $user->external_client_id = $externalClientId;
+                }
+                $user->save();
+            } else {
+                $user = User::create([
+                    'name' => $data['name'] ?? 'Usuário Externo',
+                    'email' => $data['email'],
+                    'password' => bcrypt(Str::random(32)),
                     'external_client_id' => $externalClientId
                 ]);
-            } else {
-                // CENÁRIO B: Usuário NÃO EXISTE (Aqui estava o seu erro)
-                // Criamos o usuário na hora para não barrar o acesso!
-                try {
-                    $user = User::create([
-                        'name'     => $data['name'] ?? 'Utilizador Externo',
-                        'email'    => $data['email'],
-                        'password' => bcrypt(Str::random(32)), // Gera senha aleatória forte
-                        'external_client_id' => $externalClientId // Vincula ao cliente correto
-                    ]);
-                } catch (\Exception $e) {
-                    return response("Erro ao criar utilizador automático: " . $e->getMessage(), 500);
-                }
             }
 
-            // Realiza o login forçado no Laravel
-            Auth::login($user);
+            // --- Troca de usuário logado se necessário ---
+            if (!Auth::check() || Auth::id() !== $user->id) {
+                Auth::logout(); // garante logout completo do antigo
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                Auth::login($user, false); // login temporário
+                $request->session()->regenerate(); // nova sessão limpa
+            }
         }
 
-        // Opcional: Passa os dados brutos para o Controller
+        // --- Passa dados para controller ---
         $request->attributes->set('userData', $data);
 
-        // Deixa a requisição passar para o Controller
         return $next($request);
     }
 }
