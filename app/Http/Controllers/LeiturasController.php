@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Artisan;
 use Carbon\Carbon;
 
@@ -14,46 +15,60 @@ class LeiturasController extends Controller
     {
         $query = DB::table('dados_agregados');
 
-        // Aplica filtros
+        // ======================================
+        // 1. Recupera usuário logado
+        // ======================================
+        $user = Auth::user();
+        $clienteAtual = $user->external_client_id; // <-- CLIENTE DO USER LOGADO
+
+        if (!$clienteAtual) {
+            return back()->withErrors('Usuário não possui external_client_id configurado.');
+        }
+
+        // ======================================
+        // 2. Aplica filtro fixo pelo cliente logado
+        // ======================================
+        $query->where('id_cliente', $clienteAtual);
+
+        // ======================================
+        // 3. Aplica demais filtros (exceto cliente)
+        // ======================================
         $this->applyFilters($query, $request);
 
-        // Aplica limite de 1000 registros para evitar problemas de memória
+        // Limite padrão
         $query->limit(1000);
 
+        // Resultado final
         $leituras = $query->orderByDesc('periodo_inicio')->get();
 
-        // Busca dados para preencher os filtros
-        $clientes = DB::table('dados_agregados')->distinct()->orderBy('id_cliente')->pluck('id_cliente');
-
-        // Busca equipamentos filtrados por cliente, se houver cliente selecionado
+        // ======================================
+        // 4. Filtros de equipamentos (dependem do cliente fixo)
+        // ======================================
         $equipamentos = DB::table('dados_agregados')
             ->distinct()
-            ->when($request->filled('id_cliente'), function ($query) use ($request) {
-                return $query->where('id_cliente', $request->id_cliente);
-            })
+            ->where('id_cliente', $clienteAtual)
             ->orderBy('id_equipamento')
             ->pluck('id_equipamento');
 
-        // Busca o timestamp da última agregação bem-sucedida
+        // ======================================
+        // 5. Dados auxiliares
+        // ======================================
         $ultimaAtualizacao = DB::table('dados_agregados')->max('updated_at');
-
-        // Detecta quais colunas têm dados para otimizar a exibição
         $colunasVisiveis = $this->detectarColunasVisiveis($leituras);
 
-        // Obter nome do equipamento selecionado
         $nomeEquipamento = null;
         if ($request->filled('id_equipamento')) {
             $nomeEquipamento = $this->obterNomeEquipamento($request->id_equipamento);
         }
 
-        // Calcula informações do período
         $periodoInfo = $this->calcularPeriodoInfo($leituras, $request);
-
-        // Calcula disponibilidade dos equipamentos com corrente
         $disponibilidade = $this->calcularDisponibilidade($leituras, $colunasVisiveis, $periodoInfo, $request);
-
-        // Preenche gaps para o gráfico se houver filtro de período
         $leiturasComGaps = $this->preencherGaps($leituras, $request);
+
+        // ======================================
+        // 6. Cliente único — vindo da tabela users
+        // ======================================
+        $clientes = collect([$clienteAtual]);
 
         return view('leituras.index', [
             'leituras' => $leituras,
@@ -66,15 +81,15 @@ class LeiturasController extends Controller
             'colunasVisiveis' => $colunasVisiveis,
             'nomeEquipamento' => $nomeEquipamento,
             'disponibilidade' => $disponibilidade,
-            'periodoInfo' => $periodoInfo
+            'periodoInfo' => $periodoInfo,
+            'clienteAtual' => $clienteAtual,
         ]);
     }
 
     private function applyFilters(Builder $query, Request $request): void
     {
-        if ($request->filled('id_cliente')) {
-            $query->where('id_cliente', $request->id_cliente);
-        }
+        // ⚠️ REMOVIDO FILTRO DE CLIENTE — AGORA É AUTOMÁTICO
+
         if ($request->filled('id_equipamento')) {
             $query->where('id_equipamento', $request->id_equipamento);
         }
@@ -141,7 +156,7 @@ class LeiturasController extends Controller
         $disponibilidade = [
             'brunidores' => null,
             'descascadores' => null,
-            'polidores' => null,
+                       'polidores' => null,
         ];
 
         if (!$periodoInfo) {
@@ -279,12 +294,9 @@ class LeiturasController extends Controller
             '--periodo' => 'hora'
         ]);
 
-        // Monta os parâmetros de query para manter os filtros
+        // Mantém filtros (exceto cliente)
         $queryParams = [];
-        
-        if ($request->filled('id_cliente')) {
-            $queryParams['id_cliente'] = $request->id_cliente;
-        }
+
         if ($request->filled('id_equipamento')) {
             $queryParams['id_equipamento'] = $request->id_equipamento;
         }
@@ -302,18 +314,24 @@ class LeiturasController extends Controller
     public function exportar(Request $request)
     {
         $query = DB::table('dados_agregados');
+
+        // Adiciona filtro obrigatório do cliente logado
+        $user = Auth::user();
+        $clienteAtual = $user->external_client_id;
+
+        $query->where('id_cliente', $clienteAtual);
+
+        // Filtros adicionais
         $this->applyFilters($query, $request);
-    
-        // Primeiro, obtemos uma amostra para detectar colunas visíveis
+
+        // Detecção de colunas
         $leiturasParaDeteccao = $query->limit(1000)->get();
         $colunasVisiveis = $this->detectarColunasVisiveis($leiturasParaDeteccao);
-    
-        // Define as colunas base que sempre serão exportadas
+
         $colunasParaExportar = [
             'id_cliente', 'id_equipamento', 'periodo_inicio', 'periodo_fim', 'registros_contagem'
         ];
-    
-        // Mapeia os grupos de colunas
+
         $gruposDeColunas = [
             'brunidores' => ['corrente_brunidores_media', 'corrente_brunidores_max', 'corrente_brunidores_min', 'corrente_brunidores_ultima'],
             'descascadores' => ['corrente_descascadores_media', 'corrente_descascadores_max', 'corrente_descascadores_min', 'corrente_descascadores_ultima'],
@@ -332,51 +350,47 @@ class LeiturasController extends Controller
                 'fator_potencia_media', 'fator_potencia_max', 'fator_potencia_min', 'fator_potencia_ultima',
             ]
         ];
-    
-        // Adiciona colunas relevantes com base nos dados encontrados
+
         foreach ($gruposDeColunas as $grupo => $colunas) {
             if ($colunasVisiveis[$grupo]) {
                 $colunasParaExportar = array_merge($colunasParaExportar, $colunas);
             }
         }
-    
-        // Adiciona a coluna de timestamp no final
+
         $colunasParaExportar[] = 'updated_at';
-    
-        // Refaz a query selecionando apenas as colunas necessárias
+
         $queryExport = DB::table('dados_agregados')
             ->select($colunasParaExportar)
+            ->where('id_cliente', $clienteAtual)
             ->orderBy('periodo_inicio');
-    
+
         $this->applyFilters($queryExport, $request);
-    
+
         $leituras = $queryExport->get();
-    
+
         $nomeArquivo = 'dados_agregados_' . date('Y-m-d_H-i-s') . '.csv';
-    
+
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $nomeArquivo . '"',
         ];
-    
+
         $callback = function () use ($leituras, $colunasParaExportar) {
             $file = fopen('php://output', 'w');
-            
-            // Adiciona BOM para garantir a codificação correta no Excel
+
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
-    
+
             if ($leituras->isNotEmpty()) {
-                // Usa a lista de colunas selecionadas para o cabeçalho
                 fputcsv($file, $colunasParaExportar, ';');
             }
-    
+
             foreach ($leituras as $leitura) {
                 fputcsv($file, (array) $leitura, ';');
             }
-    
+
             fclose($file);
         };
-    
+
         return response()->stream($callback, 200, $headers);
     }
 }
