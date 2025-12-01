@@ -11,45 +11,68 @@ use Carbon\Carbon;
 
 class LeiturasController extends Controller
 {
+    /**
+     * Página principal: lista leituras, aplica filtros,
+     * calcula dados adicionais e envia tudo para a view.
+     */
     public function index(Request $request)
     {
+        // Base da consulta (ler tabela agregada)
         $query = DB::table('dados_agregados');
 
+        // Obtém usuário autenticado
         $user = Auth::user();
         $clienteAtual = $user->external_client_id;
 
+        // Garante que o usuário pertence a um cliente
         if (!$clienteAtual) {
             return back()->withErrors('Usuário não possui external_client_id configurado.');
         }
 
+        // Filtra sempre pelo cliente atual
         $query->where('id_cliente', $clienteAtual);
 
+        // Aplica filtros opcionais (equipamento e datas)
         $this->applyFilters($query, $request);
 
+        // Evita retorno massivo (melhor performance)
         $query->limit(1000);
 
+        // Executa consulta
         $leituras = $query->orderByDesc('periodo_inicio')->get();
 
+        // Lista de equipamentos disponíveis para o cliente
         $equipamentos = DB::table('dados_agregados')
             ->distinct()
             ->where('id_cliente', $clienteAtual)
             ->orderBy('id_equipamento')
             ->pluck('id_equipamento');
 
+        // Última atualização da tabela
         $ultimaAtualizacao = DB::table('dados_agregados')->max('updated_at');
+
+        // Detecta quais colunas têm dados (para exibição dinâmica)
         $colunasVisiveis = $this->detectarColunasVisiveis($leituras);
 
+        // Nome formatado do equipamento (Ex: BRUNIDOR_01 → Brunidor 01)
         $nomeEquipamento = null;
         if ($request->filled('id_equipamento')) {
             $nomeEquipamento = $this->obterNomeEquipamento($request->id_equipamento);
         }
 
+        // Calcula informações de período (dias, horas etc.)
         $periodoInfo = $this->calcularPeriodoInfo($leituras, $request);
+
+        // Calcula percentual de disponibilidade por tipo de máquina
         $disponibilidade = $this->calcularDisponibilidade($leituras, $colunasVisiveis, $periodoInfo, $request);
+
+        // Preenche horas faltantes com registros nulos (para gráficos)
         $leiturasComGaps = $this->preencherGaps($leituras, $request);
 
+        // Apenas um cliente retornado, compatível com futuras multi-tenants
         $clientes = collect([$clienteAtual]);
 
+        // Retorna à view
         return view('leituras.index', [
             'leituras' => $leituras,
             'leiturasGrafico' => $leiturasComGaps,
@@ -66,6 +89,10 @@ class LeiturasController extends Controller
         ]);
     }
 
+    /**
+     * Aplica filtros opcionais à consulta SQL.
+     * Filtros: id_equipamento, data_inicio, data_fim.
+     */
     private function applyFilters(Builder $query, Request $request): void
     {
         if ($request->filled('id_equipamento')) {
@@ -81,8 +108,13 @@ class LeiturasController extends Controller
         }
     }
 
+    /**
+     * Verifica quais grupos de colunas possuem dados
+     * para determinar quais cards / gráficos mostrar na view.
+     */
     private function detectarColunasVisiveis($leituras)
     {
+        // Flags indicando se existe alguma leitura válida em cada categoria
         $colunas = [
             'brunidores' => false,
             'descascadores' => false,
@@ -92,6 +124,7 @@ class LeiturasController extends Controller
             'grandezas_eletricas' => false
         ];
 
+        // Verifica se algum registro possui valores não-nulos
         foreach ($leituras as $leitura) {
             if (!is_null($leitura->corrente_brunidores_media)) {
                 $colunas['brunidores'] = true;
@@ -116,6 +149,10 @@ class LeiturasController extends Controller
         return $colunas;
     }
 
+    /**
+     * Formata o nome de um equipamento a partir do ID.
+     * Exemplo: "BRUNIDOR_1" → "Brunidor 01".
+     */
     private function obterNomeEquipamento($idEquipamento)
     {
         $partes = explode('_', $idEquipamento);
@@ -129,6 +166,10 @@ class LeiturasController extends Controller
         return $idEquipamento;
     }
 
+    /**
+     * Calcula a disponibilidade de cada tipo de máquina.
+     * Disponibilidade = horas ligadas / horas totais filtradas.
+     */
     private function calcularDisponibilidade($leituras, $colunasVisiveis, $periodoInfo, $request)
     {
         $disponibilidade = [
@@ -141,6 +182,7 @@ class LeiturasController extends Controller
             return $disponibilidade;
         }
 
+        // Campos avaliados para cada tipo
         $tiposEquipamento = [
             'brunidores' => 'corrente_brunidores_media',
             'descascadores' => 'corrente_descascadores_media',
@@ -155,11 +197,12 @@ class LeiturasController extends Controller
 
         foreach ($tiposEquipamento as $tipo => $campo) {
             if (!$colunasVisiveis[$tipo]) {
-                continue;
+                continue; // Ignora se não há dados deste tipo
             }
 
             $periodosLigados = 0;
 
+            // Conta quantos períodos tiveram corrente > 0
             foreach ($leituras as $leitura) {
                 if (!is_null($leitura->$campo) && $leitura->$campo > 0) {
                     $periodosLigados++;
@@ -172,15 +215,20 @@ class LeiturasController extends Controller
         return $disponibilidade;
     }
 
+    /**
+     * Preenche horas faltantes entre data_inicio e data_fim
+     * criando registros "nulos" para gráficos ficarem contínuos.
+     */
     private function preencherGaps($leituras, $request)
     {
         if (!$request->filled('data_inicio') || !$request->filled('data_fim')) {
-            return $leituras;
+            return $leituras; // Nenhum preenchimento necessário
         }
 
         $dataInicio = Carbon::parse($request->data_inicio)->startOfDay();
         $dataFim = Carbon::parse($request->data_fim)->endOfDay();
 
+        // Indexa leituras por hora
         $leiturasIndexadas = [];
         foreach ($leituras as $leitura) {
             $hora = Carbon::parse($leitura->periodo_inicio)->format('Y-m-d H:00:00');
@@ -190,12 +238,15 @@ class LeiturasController extends Controller
         $resultado = collect();
         $dataAtual = $dataInicio->copy();
 
+        // Gera cada hora do período
         while ($dataAtual <= $dataFim) {
             $chave = $dataAtual->format('Y-m-d H:00:00');
 
             if (isset($leiturasIndexadas[$chave])) {
+                // Já existe leitura desta hora
                 $resultado->push($leiturasIndexadas[$chave]);
             } else {
+                // Cria registro vazio (todos campos nulos)
                 $resultado->push((object)[
                     'periodo_inicio' => $dataAtual->copy()->toDateTimeString(),
                     'periodo_fim' => $dataAtual->copy()->addHour()->toDateTimeString(),
@@ -223,10 +274,14 @@ class LeiturasController extends Controller
         return $resultado;
     }
 
+    /**
+     * Calcula datas e quantidade de horas/dias do período filtrado.
+     */
     private function calcularPeriodoInfo($leituras, $request)
     {
         $totalRegistros = $leituras->count();
 
+        // Caso usuário tenha escolhido um período manualmente
         if ($request->filled('data_inicio') && $request->filled('data_fim')) {
             $dataInicioFiltro = \Carbon\Carbon::parse($request->data_inicio)->startOfDay();
             $dataFimFiltro = \Carbon\Carbon::parse($request->data_fim)->endOfDay();
@@ -244,10 +299,12 @@ class LeiturasController extends Controller
             ];
         }
 
+        // Caso não tenha filtro e não existam registros
         if ($leituras->isEmpty()) {
             return null;
         }
 
+        // Período baseado nas leituras disponíveis
         $primeiraLeitura = $leituras->last();
         $ultimaLeitura = $leituras->first();
 
@@ -267,12 +324,18 @@ class LeiturasController extends Controller
         ];
     }
 
+    /**
+     * Executa o comando Artisan que agrega registros por hora.
+     * Depois retorna à tela preservando filtros.
+     */
     public function agregar(Request $request)
     {
+        // Comando customizado que gera médias/valores agregados
         Artisan::call('leituras:agregar', [
             '--periodo' => 'hora'
         ]);
 
+        // Mantém filtros da tela
         $queryParams = [];
 
         if ($request->filled('id_equipamento')) {
@@ -289,6 +352,10 @@ class LeiturasController extends Controller
             ->with('success', 'Dados atualizados com sucesso!');
     }
 
+    /**
+     * Exporta dados filtrados em formato CSV.
+     * Exportação inclui apenas colunas visíveis (detecção dinâmica).
+     */
     public function exportar(Request $request)
     {
         $query = DB::table('dados_agregados');
@@ -296,17 +363,22 @@ class LeiturasController extends Controller
         $user = Auth::user();
         $clienteAtual = $user->external_client_id;
 
+        // Filtra por cliente
         $query->where('id_cliente', $clienteAtual);
 
+        // Aplica filtros usuais
         $this->applyFilters($query, $request);
 
+        // Detecta colunas com base nas primeiras 1000 leituras
         $leiturasParaDeteccao = $query->limit(1000)->get();
         $colunasVisiveis = $this->detectarColunasVisiveis($leiturasParaDeteccao);
 
+        // Colunas básicas sempre exportadas
         $colunasParaExportar = [
             'id_cliente', 'id_equipamento', 'periodo_inicio', 'periodo_fim', 'registros_contagem'
         ];
 
+        // Mapeamento dos grupos
         $gruposDeColunas = [
             'brunidores' => ['corrente_brunidores_media', 'corrente_brunidores_max', 'corrente_brunidores_min', 'corrente_brunidores_ultima'],
             'descascadores' => ['corrente_descascadores_media', 'corrente_descascadores_max', 'corrente_descascadores_min', 'corrente_descascadores_ultima'],
@@ -327,14 +399,17 @@ class LeiturasController extends Controller
             ]
         ];
 
+        // Adiciona somente colunas cujos grupos existem no dataset
         foreach ($gruposDeColunas as $grupo => $colunas) {
             if ($colunasVisiveis[$grupo]) {
                 $colunasParaExportar = array_merge($colunasParaExportar, $colunas);
             }
         }
 
+        // Sempre incluir data de atualização
         $colunasParaExportar[] = 'updated_at';
 
+        // Consulta final para exportação
         $queryExport = DB::table('dados_agregados')
             ->select($colunasParaExportar)
             ->where('id_cliente', $clienteAtual)
@@ -344,22 +419,28 @@ class LeiturasController extends Controller
 
         $leituras = $queryExport->get();
 
+        // Nome do arquivo
         $nomeArquivo = 'dados_agregados_' . date('Y-m-d_H-i-s') . '.csv';
 
+        // Cabeçalhos do response
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $nomeArquivo . '"',
         ];
 
+        // Gera CSV linha a linha
         $callback = function () use ($leituras, $colunasParaExportar) {
             $file = fopen('php://output', 'w');
 
+            // Adiciona BOM UTF-8 para Excel reconhecer
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
+            // Cabeçalho
             if ($leituras->isNotEmpty()) {
                 fputcsv($file, $colunasParaExportar, ';');
             }
 
+            // Linhas
             foreach ($leituras as $leitura) {
                 fputcsv($file, (array) $leitura, ';');
             }

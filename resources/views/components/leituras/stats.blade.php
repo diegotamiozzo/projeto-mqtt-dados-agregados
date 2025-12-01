@@ -108,11 +108,10 @@
     foreach(['brunidores', 'descascadores', 'polidores'] as $tipo) {
         if (!empty($values[$tipo.'_avg']) && !is_null($stats[$tipo]['last'])) {
             $campoMedia = 'corrente_' . $tipo . '_media';
-            $campoUltima = 'corrente_' . $tipo . '_ultima';
+            $campoUltima = 'corrente_' . $tipo . '_media';
 
-            $primeiraLeitura = $leituras->first();
-            $ultimaMedida = $primeiraLeitura ? $primeiraLeitura->$campoUltima : null;
-            $mediaUltimaHora = $primeiraLeitura ? $primeiraLeitura->$campoMedia : null;
+            $ultimaMedida = $ultimaLeitura ? $ultimaLeitura->$campoUltima : null;
+            $mediaUltimaHora = $stats[$tipo]['avg'];
 
             if (!is_null($ultimaMedida) && !is_null($mediaUltimaHora) && $mediaUltimaHora > 0) {
                 $diferencaPercentual = (($ultimaMedida - $mediaUltimaHora) / $mediaUltimaHora) * 100;
