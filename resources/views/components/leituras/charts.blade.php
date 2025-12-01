@@ -422,7 +422,7 @@
                     fill: true,
                     pointRadius: 0,
                     pointHoverRadius: 6
-                }
+                },
 
                 {
                     label: 'Potência Aparente (kVA)',
