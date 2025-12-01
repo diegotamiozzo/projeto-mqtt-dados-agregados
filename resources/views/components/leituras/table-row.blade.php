@@ -93,6 +93,10 @@
         <td>{{ $l->potencia_reativa_max ? number_format($l->potencia_reativa_max, 2) . 'kVAr' : '-' }}</td>
         <td>{{ $l->potencia_reativa_min ? number_format($l->potencia_reativa_min, 2) . 'kVAr' : '-' }}</td>
         <td>{{ $l->potencia_reativa_ultima ? number_format($l->potencia_reativa_ultima, 2) . 'kVAr' : '-' }}</td>
+        <td>{{ $l->potencia_aparente_media ? number_format($l->potencia_aparente_media, 2) . 'kVA' : '-' }}</td>
+        <td>{{ $l->potencia_aparente_max ? number_format($l->potencia_aparente_max, 2) . 'kVA' : '-' }}</td>
+        <td>{{ $l->potencia_aparente_min ? number_format($l->potencia_aparente_min, 2) . 'kVA' : '-' }}</td>
+        <td>{{ $l->potencia_aparente_ultima ? number_format($l->potencia_aparente_ultima, 2) . 'kVA' : '-' }}</td>
         <td>{{ $l->fator_potencia_media ? number_format($l->fator_potencia_media, 4) : '-' }}</td>
         <td>{{ $l->fator_potencia_max ? number_format($l->fator_potencia_max, 4) : '-' }}</td>
         <td>{{ $l->fator_potencia_min ? number_format($l->fator_potencia_min, 4) : '-' }}</td>

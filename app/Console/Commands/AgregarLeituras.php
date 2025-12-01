@@ -11,7 +11,6 @@ class AgregarLeituras extends Command
     protected $signature = 'leituras:agregar {--periodo=hora : Período de agregação (hora ou dia)}';
     protected $description = 'Agrega leituras de equipamentos em dados_agregados com alta performance';
 
-    // Define o tamanho do lote para inserções em massa
     private const BATCH_SIZE = 500;
 
     public function handle()
@@ -24,17 +23,14 @@ class AgregarLeituras extends Command
             return 1;
         }
 
-        // Captura o momento do início para garantir consistência na marcação posterior
         $timestampCorte = now();
 
         try {
-            // Transações separadas por operação reduzem Deadlocks e Long Locks
             $this->processarCorrentes($periodo);
             $this->processarSimples('temperaturas', 'temperatura', $periodo);
             $this->processarSimples('umidades', 'umidade', $periodo);
             $this->processarGrandezasEletricas($periodo);
 
-            // Marcação e Limpeza
             DB::transaction(function () use ($timestampCorte) {
                 $this->marcarComoAgregado($timestampCorte);
                 $this->limparRegistrosAntigos();
@@ -45,7 +41,6 @@ class AgregarLeituras extends Command
 
         } catch (\Exception $e) {
             $this->error("✗ Erro durante agregação: " . $e->getMessage());
-            // Logar o erro completo para debug
             \Log::error($e);
             return 1;
         }
@@ -59,9 +54,6 @@ class AgregarLeituras extends Command
         };
     }
 
-    /**
-     * Processa as tabelas de correntes (brunidores, descascadores, polidores)
-     */
     private function processarCorrentes(string $periodo): void
     {
         $this->info("\n[1/4] Agregando correntes...");
@@ -78,7 +70,6 @@ class AgregarLeituras extends Command
             $prefixo = $tipo['prefixo'];
 
             DB::transaction(function () use ($tabela, $prefixo, $formato, $periodo) {
-                // Seleciona os dados agrupados
                 $leituras = DB::select("
                     SELECT
                         id_cliente,
@@ -98,7 +89,6 @@ class AgregarLeituras extends Command
                 }
 
                 $this->upsertLote($leituras, $periodo, function($dado, $existente) use ($prefixo, $tabela, $formato) {
-                    // Busca última leitura de forma eficiente apenas se necessário
                     $ultima = DB::selectOne("
                         SELECT corrente FROM {$tabela} 
                         WHERE id_cliente = ? AND id_equipamento = ? AND DATE_FORMAT(timestamp, '{$formato}') = ? 
@@ -118,10 +108,6 @@ class AgregarLeituras extends Command
         }
     }
 
-    /**
-     * Processa tabelas com estrutura simples (Temperatura, Umidade)
-     * Reutiliza lógica para evitar duplicação de código
-     */
     private function processarSimples(string $tabela, string $coluna, string $periodo): void
     {
         $this->info("  → Processando {$tabela}...");
@@ -167,8 +153,6 @@ class AgregarLeituras extends Command
         $formato = $this->getFormatoSQL($periodo);
 
         DB::transaction(function () use ($formato, $periodo) {
-            // Query otimizada para pegar as agregações
-            // Nota: Adicionei índices nas colunas de seleção se não existirem
             $leituras = DB::select("
                 SELECT
                     id_cliente,
@@ -182,6 +166,7 @@ class AgregarLeituras extends Command
                     AVG(corrente_t) as ct_avg, MAX(corrente_t) as ct_max, MIN(corrente_t) as ct_min,
                     AVG(potencia_ativa) as pa_avg, MAX(potencia_ativa) as pa_max, MIN(potencia_ativa) as pa_min,
                     AVG(potencia_reativa) as pr_avg, MAX(potencia_reativa) as pr_max, MIN(potencia_reativa) as pr_min,
+                    AVG(potencia_aparente) as pap_avg, MAX(potencia_aparente) as pap_max, MIN(potencia_aparente) as pap_min,
                     AVG(fator_potencia) as fp_avg, MAX(fator_potencia) as fp_max, MIN(fator_potencia) as fp_min,
                     COUNT(*) AS total
                 FROM grandezas_eletricas
@@ -192,10 +177,9 @@ class AgregarLeituras extends Command
             if (empty($leituras)) return;
 
             $this->upsertLote($leituras, $periodo, function($dado) use ($formato) {
-                // Busca a linha completa da última leitura
                 $ultima = DB::selectOne("
                     SELECT tensao_r, tensao_s, tensao_t, corrente_r, corrente_s, corrente_t,
-                           potencia_ativa, potencia_reativa, fator_potencia
+                           potencia_ativa, potencia_reativa, potencia_aparente, fator_potencia
                     FROM grandezas_eletricas
                     WHERE id_cliente = ? AND id_equipamento = ? AND DATE_FORMAT(timestamp, '{$formato}') = ?
                     ORDER BY timestamp DESC LIMIT 1
@@ -210,29 +194,23 @@ class AgregarLeituras extends Command
                     'corrente_t_media' => $dado->ct_avg, 'corrente_t_max' => $dado->ct_max, 'corrente_t_min' => $dado->ct_min, 'corrente_t_ultima' => $ultima->corrente_t ?? null,
                     'potencia_ativa_media' => $dado->pa_avg, 'potencia_ativa_max' => $dado->pa_max, 'potencia_ativa_min' => $dado->pa_min, 'potencia_ativa_ultima' => $ultima->potencia_ativa ?? null,
                     'potencia_reativa_media' => $dado->pr_avg, 'potencia_reativa_max' => $dado->pr_max, 'potencia_reativa_min' => $dado->pr_min, 'potencia_reativa_ultima' => $ultima->potencia_reativa ?? null,
+                    'potencia_aparente_media' => $dado->pap_avg, 'potencia_aparente_max' => $dado->pap_max, 'potencia_aparente_min' => $dado->pap_min, 'potencia_aparente_ultima' => $ultima->potencia_aparente ?? null,
                     'fator_potencia_media' => $dado->fp_avg, 'fator_potencia_max' => $dado->fp_max, 'fator_potencia_min' => $dado->fp_min, 'fator_potencia_ultima' => $ultima->fator_potencia ?? null,
                 ];
             });
         });
     }
 
-    /**
-     * Função CORE de otimização: Realiza UPSERT em lotes e gerencia dados existentes em memória
-     */
     private function upsertLote(array $novosDados, string $periodo, callable $mapCallback): void
     {
-        // Divide o array gigante em pedaços menores para não estourar memória/query limit
         $chunks = array_chunk($novosDados, self::BATCH_SIZE);
 
         foreach ($chunks as $chunk) {
             $chavesBusca = [];
             foreach ($chunk as $row) {
-                // Cria chaves compostas para busca rápida
                 $chavesBusca[] = "{$row->id_cliente}-{$row->id_equipamento}-{$row->periodo_inicio}";
             }
 
-            // 1. Busca dados JÁ existentes no banco para este lote (Eager Loading)
-            // Isso evita fazer um SELECT dentro do loop para cada item
             $existentes = DB::table('dados_agregados')
                 ->whereIn(DB::raw("CONCAT(id_cliente, '-', id_equipamento, '-', periodo_inicio)"), $chavesBusca)
                 ->get()
@@ -246,14 +224,11 @@ class AgregarLeituras extends Command
                 $key = "{$dado->id_cliente}-{$dado->id_equipamento}-{$dado->periodo_inicio}";
                 $registroExistente = $existentes->get($key);
 
-                // Cálculo da data fim via PHP (Muito mais rápido que DATE_ADD no SQL)
                 $inicio = Carbon::parse($dado->periodo_inicio);
                 $fim = $periodo === 'hora' ? $inicio->copy()->addHour() : $inicio->copy()->addDay();
 
-                // Executa o callback para mapear as colunas específicas da tabela (corrente, temp, etc)
                 $camposEspecificos = $mapCallback($dado, $registroExistente);
 
-                // Monta o array base
                 $linha = array_merge([
                     'id_cliente' => $dado->id_cliente,
                     'id_equipamento' => $dado->id_equipamento,
@@ -262,10 +237,8 @@ class AgregarLeituras extends Command
                     'updated_at' => now()->toDateTimeString(),
                 ], $camposEspecificos);
 
-                // Lógica de soma de contagem
                 if ($registroExistente) {
                     $linha['registros_contagem'] = $registroExistente->registros_contagem + $dado->total;
-                    // Mantém created_at antigo, atualiza o resto
                     $linha['created_at'] = $registroExistente->created_at;
                 } else {
                     $linha['registros_contagem'] = $dado->total;
@@ -275,13 +248,11 @@ class AgregarLeituras extends Command
                 $upsertData[] = $linha;
             }
 
-            // 2. Realiza UPSERT (Insert or Update) em lote
-            // Requer Unique Key no banco: (id_cliente, id_equipamento, periodo_inicio)
             if (!empty($upsertData)) {
                 DB::table('dados_agregados')->upsert(
                     $upsertData, 
-                    ['id_cliente', 'id_equipamento', 'periodo_inicio'], // Colunas chave única
-                    array_keys(reset($upsertData)) // Atualiza todas as colunas passadas
+                    ['id_cliente', 'id_equipamento', 'periodo_inicio'],
+                    array_keys(reset($upsertData))
                 );
             }
         }
@@ -297,7 +268,6 @@ class AgregarLeituras extends Command
         ];
 
         foreach ($tabelas as $tabela) {
-            // Atualiza apenas o que foi processado até o início do comando (evita race condition)
             $count = DB::table($tabela)
                 ->where('agregado', 0)
                 ->where('timestamp', '<=', $timestampCorte)
@@ -320,8 +290,6 @@ class AgregarLeituras extends Command
         ];
 
         foreach ($tabelas as $tabela) {
-            // Delete direto é mais rápido que buscar e deletar
-            // Adicionado LIMIT para não travar o banco se houver milhões de linhas
             do {
                 $count = DB::delete("
                     DELETE FROM {$tabela} 

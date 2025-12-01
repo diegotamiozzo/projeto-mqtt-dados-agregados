@@ -79,6 +79,7 @@
             <th colspan="4" class="table-secondary">Corrente T</th>
             <th colspan="4" class="table-warning">Potência Ativa</th>
             <th colspan="4" class="table-info">Potência Reativa</th>
+            <th colspan="4" class="table-primary">Potência Aparente</th>
             <th colspan="4" class="table-success">Fator Potência</th>
         @endif
     </tr>
@@ -131,6 +132,12 @@
             <th class="table-info">Máx</th>
             <th class="table-info">Mín</th>
             <th class="table-info">Última</th>
+
+            {{-- Potência Aparente --}}
+            <th class="table-primary">Média</th>
+            <th class="table-primary">Máx</th>
+            <th class="table-primary">Mín</th>
+            <th class="table-primary">Última</th>
 
             {{-- Fator Potência --}}
             <th class="table-success">Média</th>

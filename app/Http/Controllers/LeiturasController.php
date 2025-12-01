@@ -15,44 +15,27 @@ class LeiturasController extends Controller
     {
         $query = DB::table('dados_agregados');
 
-        // ======================================
-        // 1. Recupera usuário logado
-        // ======================================
         $user = Auth::user();
-        $clienteAtual = $user->external_client_id; // <-- CLIENTE DO USER LOGADO
+        $clienteAtual = $user->external_client_id;
 
         if (!$clienteAtual) {
             return back()->withErrors('Usuário não possui external_client_id configurado.');
         }
 
-        // ======================================
-        // 2. Aplica filtro fixo pelo cliente logado
-        // ======================================
         $query->where('id_cliente', $clienteAtual);
 
-        // ======================================
-        // 3. Aplica demais filtros (exceto cliente)
-        // ======================================
         $this->applyFilters($query, $request);
 
-        // Limite padrão
         $query->limit(1000);
 
-        // Resultado final
         $leituras = $query->orderByDesc('periodo_inicio')->get();
 
-        // ======================================
-        // 4. Filtros de equipamentos (dependem do cliente fixo)
-        // ======================================
         $equipamentos = DB::table('dados_agregados')
             ->distinct()
             ->where('id_cliente', $clienteAtual)
             ->orderBy('id_equipamento')
             ->pluck('id_equipamento');
 
-        // ======================================
-        // 5. Dados auxiliares
-        // ======================================
         $ultimaAtualizacao = DB::table('dados_agregados')->max('updated_at');
         $colunasVisiveis = $this->detectarColunasVisiveis($leituras);
 
@@ -65,9 +48,6 @@ class LeiturasController extends Controller
         $disponibilidade = $this->calcularDisponibilidade($leituras, $colunasVisiveis, $periodoInfo, $request);
         $leiturasComGaps = $this->preencherGaps($leituras, $request);
 
-        // ======================================
-        // 6. Cliente único — vindo da tabela users
-        // ======================================
         $clientes = collect([$clienteAtual]);
 
         return view('leituras.index', [
@@ -88,8 +68,6 @@ class LeiturasController extends Controller
 
     private function applyFilters(Builder $query, Request $request): void
     {
-        // ⚠️ REMOVIDO FILTRO DE CLIENTE — AGORA É AUTOMÁTICO
-
         if ($request->filled('id_equipamento')) {
             $query->where('id_equipamento', $request->id_equipamento);
         }
@@ -156,7 +134,7 @@ class LeiturasController extends Controller
         $disponibilidade = [
             'brunidores' => null,
             'descascadores' => null,
-                       'polidores' => null,
+            'polidores' => null,
         ];
 
         if (!$periodoInfo) {
@@ -234,6 +212,7 @@ class LeiturasController extends Controller
                     'corrente_t_media' => null,
                     'potencia_ativa_media' => null,
                     'potencia_reativa_media' => null,
+                    'potencia_aparente_media' => null,
                     'fator_potencia_media' => null,
                 ]);
             }
@@ -294,7 +273,6 @@ class LeiturasController extends Controller
             '--periodo' => 'hora'
         ]);
 
-        // Mantém filtros (exceto cliente)
         $queryParams = [];
 
         if ($request->filled('id_equipamento')) {
@@ -315,16 +293,13 @@ class LeiturasController extends Controller
     {
         $query = DB::table('dados_agregados');
 
-        // Adiciona filtro obrigatório do cliente logado
         $user = Auth::user();
         $clienteAtual = $user->external_client_id;
 
         $query->where('id_cliente', $clienteAtual);
 
-        // Filtros adicionais
         $this->applyFilters($query, $request);
 
-        // Detecção de colunas
         $leiturasParaDeteccao = $query->limit(1000)->get();
         $colunasVisiveis = $this->detectarColunasVisiveis($leiturasParaDeteccao);
 
@@ -347,6 +322,7 @@ class LeiturasController extends Controller
                 'corrente_t_media', 'corrente_t_max', 'corrente_t_min', 'corrente_t_ultima',
                 'potencia_ativa_media', 'potencia_ativa_max', 'potencia_ativa_min', 'potencia_ativa_ultima',
                 'potencia_reativa_media', 'potencia_reativa_max', 'potencia_reativa_min', 'potencia_reativa_ultima',
+                'potencia_aparente_media', 'potencia_aparente_max', 'potencia_aparente_min', 'potencia_aparente_ultima',
                 'fator_potencia_media', 'fator_potencia_max', 'fator_potencia_min', 'fator_potencia_ultima',
             ]
         ];

@@ -15,6 +15,7 @@
     $correnteTData = [];
     $potenciaAtivaData = [];
     $potenciaReativaData = [];
+    $potenciaAparenteData = [];
     $fatorPotenciaData = [];
 
     foreach($leituras as $leitura) {
@@ -34,6 +35,7 @@
         $correnteTData[] = $leitura->corrente_t_media;
         $potenciaAtivaData[] = $leitura->potencia_ativa_media;
         $potenciaReativaData[] = $leitura->potencia_reativa_media;
+        $potenciaAparenteData[] = $leitura->potencia_aparente_media;
         $fatorPotenciaData[] = $leitura->fator_potencia_media;
     }
 @endphp
@@ -421,7 +423,20 @@
                     pointRadius: 0,
                     pointHoverRadius: 6
                 }
+
+                {
+                    label: 'Potência Aparente (kVA)',
+                    data: @json($potenciaAparenteData),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2.5,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 6
+                }
             ]
+        
         },
         fator: {
             labels: labels,
@@ -451,7 +466,7 @@
         const subtitles = {
             tensao: 'Tensão - Valores médios por hora (V)',
             corrente: 'Corrente - Valores médios por hora (A)',
-            potencia: 'Potência - Valores médios por hora',
+            potencia: 'Potência - Valores médios por hora (kW / kVAr / kVA)',
             fator: 'Fator de Potência - Valores médios por hora'
         };
 

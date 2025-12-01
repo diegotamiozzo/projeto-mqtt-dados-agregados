@@ -15,6 +15,7 @@
         'corrente_t' => ['min' => null, 'max' => null, 'avg' => null, 'last' => null, 'color' => 'blue'],
         'potencia_ativa' => ['min' => null, 'max' => null, 'avg' => null, 'last' => null, 'color' => 'green'],
         'potencia_reativa' => ['min' => null, 'max' => null, 'avg' => null, 'last' => null, 'color' => 'purple'],
+        'potencia_aparente' => ['min' => null, 'max' => null, 'avg' => null, 'last' => null, 'color' => 'indigo'],
         'fator_potencia' => ['min' => null, 'max' => null, 'avg' => null, 'last' => null, 'color' => 'primary'],
     ];
 
@@ -32,6 +33,7 @@
         'corrente_t_min' => [], 'corrente_t_max' => [], 'corrente_t_avg' => [],
         'potencia_ativa_min' => [], 'potencia_ativa_max' => [], 'potencia_ativa_avg' => [],
         'potencia_reativa_min' => [], 'potencia_reativa_max' => [], 'potencia_reativa_avg' => [],
+        'potencia_aparente_min' => [], 'potencia_aparente_max' => [], 'potencia_aparente_avg' => [],
         'fator_potencia_min' => [], 'fator_potencia_max' => [], 'fator_potencia_avg' => [],
     ];
 
@@ -64,7 +66,7 @@
             if (!is_null($leitura->umidade_media)) $values['umidade_avg'][] = $leitura->umidade_media;
         }
         if ($colunasVisiveis['grandezas_eletricas']) {
-            foreach(['tensao_r', 'tensao_s', 'tensao_t', 'corrente_r', 'corrente_s', 'corrente_t', 'potencia_ativa', 'potencia_reativa', 'fator_potencia'] as $field) {
+            foreach(['tensao_r', 'tensao_s', 'tensao_t', 'corrente_r', 'corrente_s', 'corrente_t', 'potencia_ativa', 'potencia_reativa', 'potencia_aparente', 'fator_potencia'] as $field) {
                 if (!is_null($leitura->{$field.'_min'})) $values[$field.'_min'][] = $leitura->{$field.'_min'};
                 if (!is_null($leitura->{$field.'_max'})) $values[$field.'_max'][] = $leitura->{$field.'_max'};
                 if (!is_null($leitura->{$field.'_media'})) $values[$field.'_avg'][] = $leitura->{$field.'_media'};
@@ -98,6 +100,7 @@
         $stats['corrente_t']['last'] = $ultimaLeitura->corrente_t_media;
         $stats['potencia_ativa']['last'] = $ultimaLeitura->potencia_ativa_media;
         $stats['potencia_reativa']['last'] = $ultimaLeitura->potencia_reativa_media;
+        $stats['potencia_aparente']['last'] = $ultimaLeitura->potencia_aparente_media;
         $stats['fator_potencia']['last'] = $ultimaLeitura->fator_potencia_media;
     }
 
@@ -599,6 +602,31 @@
                                     <div class="flex items-center">
                                         <svg class="w-3 h-3 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
                                         <span>Max: {{ number_format($stats['potencia_reativa']['max'], 2, ',', '.') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        @if(!empty($values['potencia_aparente_avg']))
+                        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-smooth p-5 min-w-64 border border-neutral-200 card-hover">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1">Potência Aparente</p>
+                                <p class="text-3xl font-bold text-indigo-600 mb-3">{{ number_format($stats['potencia_aparente']['last'], 2, ',', '.') }} <span class="text-sm text-neutral-500">kVA</span></p>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-neutral-600">
+                                    <div class="flex items-center">
+                                        <svg class="w-3 h-3 mr-1 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                        <span>Min: {{ number_format($stats['potencia_aparente']['min'], 2, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <svg class="w-3 h-3 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                                        <span>Max: {{ number_format($stats['potencia_aparente']['max'], 2, ',', '.') }}</span>
                                     </div>
                                 </div>
                             </div>
