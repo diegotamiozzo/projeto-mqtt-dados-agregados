@@ -39,37 +39,37 @@
 
     $ultimaLeitura = $leituras->first();
 
-    foreach($leituras as $leitura) {
+foreach($leituras as $leitura) {
         if ($colunasVisiveis['brunidores']) {
-            if (!is_null($leitura->corrente_brunidores_min)) $values['brunidores_min'][] = $leitura->corrente_brunidores_min;
-            if (!is_null($leitura->corrente_brunidores_max)) $values['brunidores_max'][] = $leitura->corrente_brunidores_max;
-            if (!is_null($leitura->corrente_brunidores_media)) $values['brunidores_avg'][] = $leitura->corrente_brunidores_media;
+            if (!is_null($leitura->corrente_brunidores_min) && $leitura->corrente_brunidores_min > 0) $values['brunidores_min'][] = $leitura->corrente_brunidores_min;
+            if (!is_null($leitura->corrente_brunidores_max) && $leitura->corrente_brunidores_max > 0) $values['brunidores_max'][] = $leitura->corrente_brunidores_max;
+            if (!is_null($leitura->corrente_brunidores_media) && $leitura->corrente_brunidores_media > 0) $values['brunidores_avg'][] = $leitura->corrente_brunidores_media;
         }
         if ($colunasVisiveis['descascadores']) {
-            if (!is_null($leitura->corrente_descascadores_min)) $values['descascadores_min'][] = $leitura->corrente_descascadores_min;
-            if (!is_null($leitura->corrente_descascadores_max)) $values['descascadores_max'][] = $leitura->corrente_descascadores_max;
-            if (!is_null($leitura->corrente_descascadores_media)) $values['descascadores_avg'][] = $leitura->corrente_descascadores_media;
+            if (!is_null($leitura->corrente_descascadores_min) && $leitura->corrente_descascadores_min > 0) $values['descascadores_min'][] = $leitura->corrente_descascadores_min;
+            if (!is_null($leitura->corrente_descascadores_max) && $leitura->corrente_descascadores_max > 0) $values['descascadores_max'][] = $leitura->corrente_descascadores_max;
+            if (!is_null($leitura->corrente_descascadores_media) && $leitura->corrente_descascadores_media > 0) $values['descascadores_avg'][] = $leitura->corrente_descascadores_media;
         }
         if ($colunasVisiveis['polidores']) {
-            if (!is_null($leitura->corrente_polidores_min)) $values['polidores_min'][] = $leitura->corrente_polidores_min;
-            if (!is_null($leitura->corrente_polidores_max)) $values['polidores_max'][] = $leitura->corrente_polidores_max;
-            if (!is_null($leitura->corrente_polidores_media)) $values['polidores_avg'][] = $leitura->corrente_polidores_media;
+            if (!is_null($leitura->corrente_polidores_min) && $leitura->corrente_polidores_min > 0) $values['polidores_min'][] = $leitura->corrente_polidores_min;
+            if (!is_null($leitura->corrente_polidores_max) && $leitura->corrente_polidores_max > 0) $values['polidores_max'][] = $leitura->corrente_polidores_max;
+            if (!is_null($leitura->corrente_polidores_media) && $leitura->corrente_polidores_media > 0) $values['polidores_avg'][] = $leitura->corrente_polidores_media;
         }
         if ($colunasVisiveis['temperatura']) {
-            if (!is_null($leitura->temperatura_min)) $values['temperatura_min'][] = $leitura->temperatura_min;
-            if (!is_null($leitura->temperatura_max)) $values['temperatura_max'][] = $leitura->temperatura_max;
-            if (!is_null($leitura->temperatura_media)) $values['temperatura_avg'][] = $leitura->temperatura_media;
+            if (!is_null($leitura->temperatura_min) && $leitura->temperatura_min > 0) $values['temperatura_min'][] = $leitura->temperatura_min;
+            if (!is_null($leitura->temperatura_max) && $leitura->temperatura_max > 0) $values['temperatura_max'][] = $leitura->temperatura_max;
+            if (!is_null($leitura->temperatura_media) && $leitura->temperatura_media > 0) $values['temperatura_avg'][] = $leitura->temperatura_media;
         }
         if ($colunasVisiveis['umidade']) {
-            if (!is_null($leitura->umidade_min)) $values['umidade_min'][] = $leitura->umidade_min;
-            if (!is_null($leitura->umidade_max)) $values['umidade_max'][] = $leitura->umidade_max;
-            if (!is_null($leitura->umidade_media)) $values['umidade_avg'][] = $leitura->umidade_media;
+            if (!is_null($leitura->umidade_min) && $leitura->umidade_min > 0) $values['umidade_min'][] = $leitura->umidade_min;
+            if (!is_null($leitura->umidade_max) && $leitura->umidade_max > 0) $values['umidade_max'][] = $leitura->umidade_max;
+            if (!is_null($leitura->umidade_media) && $leitura->umidade_media > 0) $values['umidade_avg'][] = $leitura->umidade_media;
         }
         if ($colunasVisiveis['grandezas_eletricas']) {
             foreach(['tensao_r', 'tensao_s', 'tensao_t', 'corrente_r', 'corrente_s', 'corrente_t', 'potencia_ativa', 'potencia_reativa', 'potencia_aparente', 'fator_potencia'] as $field) {
-                if (!is_null($leitura->{$field.'_min'})) $values[$field.'_min'][] = $leitura->{$field.'_min'};
-                if (!is_null($leitura->{$field.'_max'})) $values[$field.'_max'][] = $leitura->{$field.'_max'};
-                if (!is_null($leitura->{$field.'_media'})) $values[$field.'_avg'][] = $leitura->{$field.'_media'};
+                if (!is_null($leitura->{$field.'_min'}) && $leitura->{$field.'_min'} > 0) $values[$field.'_min'][] = $leitura->{$field.'_min'};
+                if (!is_null($leitura->{$field.'_max'}) && $leitura->{$field.'_max'} > 0) $values[$field.'_max'][] = $leitura->{$field.'_max'};
+                if (!is_null($leitura->{$field.'_media'}) && $leitura->{$field.'_media'} > 0) $values[$field.'_avg'][] = $leitura->{$field.'_media'};
             }
         }
     }

@@ -80,8 +80,7 @@
             </select>
         </div>
 
-
-        <!-- Datas -->
+        <!-- Entrada de filtro de datas -->
         <div>
             <label for="data_inicio" class="block text-sm font-medium text-neutral-700 mb-2">
                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
