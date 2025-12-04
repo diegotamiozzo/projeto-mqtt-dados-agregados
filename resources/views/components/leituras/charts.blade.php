@@ -38,6 +38,8 @@
         $potenciaAparenteData[] = $leitura->potencia_aparente_media;
         $fatorPotenciaData[] = $leitura->fator_potencia_media;
     }
+
+    $initialGrandezasView = request('view_grandezas', 'tensao');
 @endphp
 
 <div class="space-y-6">
@@ -456,9 +458,12 @@
         }
     };
 
+    const initialView = @json($initialGrandezasView);
+
     let grandezasChart = new Chart(grandezasCtx, {
         type: 'line',
-        data: grandezasData.tensao,
+        // Inicia o gráfico com os dados corretos, evitando a "piscada"
+        data: grandezasData[initialView],
         options: chartOptions
     });
 
@@ -486,9 +491,26 @@
         grandezasChart.data = grandezasData[tipo];
         grandezasChart.update('active');
 
+        // Atualiza a URL para manter o estado em reloads manuais
+        const url = new URL(window.location);
+        url.searchParams.set('view_grandezas', tipo);
+        window.history.replaceState({}, '', url);
+
+        // Atualiza o valor do campo hidden no formulário de filtros
+        const filtersInput = document.getElementById('view_grandezas_input');
+        if (filtersInput) filtersInput.value = tipo;
+
+        // Atualiza o valor do campo hidden no formulário de ações (auto-refresh)
+        const actionsInput = document.getElementById('view_grandezas_actions_input');
+        if (actionsInput) actionsInput.value = tipo;
+
         if (typeof window.switchGrandezasCards === 'function') {
             window.switchGrandezasCards(tipo);
         }
     };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        window.switchGrandezas(initialView);
+    });
     @endif
 </script>

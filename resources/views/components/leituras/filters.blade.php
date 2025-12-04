@@ -90,7 +90,7 @@
                 Data Início <span class="text-red-600">*</span>
             </label>
             <input type="date" name="data_inicio" id="data_inicio"
-                   value="{{ $filters['data_inicio'] ?? '' }}" required
+                   value="{{ $filters['data_inicio'] ?? now()->format('Y-m-d') }}" required
                    class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg
                           focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth bg-white text-neutral-900">
         </div>
@@ -104,13 +104,16 @@
                 Data Fim <span class="text-red-600">*</span>
             </label>
             <input type="date" name="data_fim" id="data_fim"
-                   value="{{ $filters['data_fim'] ?? '' }}" required
+                   value="{{ $filters['data_fim'] ?? now()->format('Y-m-d') }}" required
                    class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg
                           focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth bg-white text-neutral-900">
             <p id="data_erro" class="text-red-600 text-sm mt-1 hidden">
                 A data de fim não pode ser anterior à data de início
             </p>
         </div>
+        
+        <!-- Campo oculto para manter a visualização das grandezas -->
+        <input type="hidden" name="view_grandezas" id="view_grandezas_input" value="{{ $filters['view_grandezas'] ?? 'tensao' }}">
 
         <!-- Botões -->
         <div class="pt-2 space-y-2">

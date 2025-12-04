@@ -106,23 +106,21 @@ foreach($leituras as $leitura) {
 
     $statusProducao = [];
     foreach(['brunidores', 'descascadores', 'polidores'] as $tipo) {
-        if (!empty($values[$tipo.'_avg']) && !is_null($stats[$tipo]['last'])) {
-            $campoMedia = 'corrente_' . $tipo . '_media';
-            $campoUltima = 'corrente_' . $tipo . '_media';
+        $campoCorrenteMedia = 'corrente_' . $tipo . '_media';
+        // A "última medida" é a média do último minuto (que já está em $ultimaLeitura).
+        $ultimaMedida = $ultimaLeitura ? $ultimaLeitura->$campoCorrenteMedia : null;
+        // A "média da última hora" será a média de todo o período para comparação.
+        $mediaUltimaHora = $stats[$tipo]['avg'];
 
-            $ultimaMedida = $ultimaLeitura ? $ultimaLeitura->$campoUltima : null;
-            $mediaUltimaHora = $stats[$tipo]['avg'];
+        if (!is_null($ultimaMedida) && $ultimaMedida > 0 && !is_null($mediaUltimaHora) && $mediaUltimaHora > 0) {
+            $diferencaPercentual = (($ultimaMedida - $mediaUltimaHora) / $mediaUltimaHora) * 100;
 
-            if (!is_null($ultimaMedida) && !is_null($mediaUltimaHora) && $mediaUltimaHora > 0) {
-                $diferencaPercentual = (($ultimaMedida - $mediaUltimaHora) / $mediaUltimaHora) * 100;
-
-                if ($diferencaPercentual < -20) {
-                    $statusProducao[$tipo] = ['status' => 'leve', 'color' => 'blue', 'label' => 'Leve', 'ultima_medida' => $ultimaMedida, 'media_ultima_hora' => $mediaUltimaHora];
-                } elseif ($diferencaPercentual > 20) {
-                    $statusProducao[$tipo] = ['status' => 'pesada', 'color' => 'orange', 'label' => 'Pesada', 'ultima_medida' => $ultimaMedida, 'media_ultima_hora' => $mediaUltimaHora];
-                } else {
-                    $statusProducao[$tipo] = ['status' => 'normal', 'color' => 'green', 'label' => 'Normal', 'ultima_medida' => $ultimaMedida, 'media_ultima_hora' => $mediaUltimaHora];
-                }
+            if ($diferencaPercentual < -20) {
+                $statusProducao[$tipo] = ['status' => 'leve', 'color' => 'blue', 'label' => 'Leve', 'ultima_medida' => $ultimaMedida, 'media_ultima_hora' => $mediaUltimaHora, 'diff' => $diferencaPercentual];
+            } elseif ($diferencaPercentual > 20) {
+                $statusProducao[$tipo] = ['status' => 'pesada', 'color' => 'orange', 'label' => 'Pesada', 'ultima_medida' => $ultimaMedida, 'media_ultima_hora' => $mediaUltimaHora, 'diff' => $diferencaPercentual];
+            } else {
+                $statusProducao[$tipo] = ['status' => 'normal', 'color' => 'green', 'label' => 'Normal', 'ultima_medida' => $ultimaMedida, 'media_ultima_hora' => $mediaUltimaHora, 'diff' => $diferencaPercentual];
             }
         }
     }
@@ -684,6 +682,7 @@ foreach($leituras as $leitura) {
     };
 
     document.addEventListener('DOMContentLoaded', function() {
-        window.switchGrandezasCards('tensao');
+        const initialView = new URLSearchParams(window.location.search).get('view_grandezas') || 'tensao';
+        window.switchGrandezasCards(initialView);
     });
 </script>

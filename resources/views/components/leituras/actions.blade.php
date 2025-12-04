@@ -17,6 +17,9 @@
             @if(request('data_fim'))
                 <input type="hidden" name="data_fim" value="{{ request('data_fim') }}">
             @endif
+            @if(request('view_grandezas'))
+                <input type="hidden" name="view_grandezas" id="view_grandezas_actions_input" value="{{ request('view_grandezas') }}">
+            @endif
 
             <button type="submit" id="atualizar-button" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 px-4 rounded-lg transition-smooth shadow-sm hover:shadow-md flex items-center justify-center space-x-2 group">
                 <svg class="w-5 h-5 transition-transform group-hover:rotate-180 duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
