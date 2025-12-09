@@ -64,15 +64,6 @@ class AgregarLeituras extends Command
         return (($mediaAntiga * $countAntigo) + ($mediaNova * $countNovo)) / ($countAntigo + $countNovo);
     }
 
-    /**
-     * Helper para calcular o fim do período baseado no início e no tipo
-     */
-    private function getFimPeriodo($inicio, $periodo)
-    {
-        $dt = Carbon::parse($inicio);
-        return $periodo === 'hora' ? $dt->endOfHour()->toDateTimeString() : $dt->endOfDay()->toDateTimeString();
-    }
-
     private function processarCorrentes(string $periodo): void
     {
         $this->info("\n[1/4] Agregando correntes...");
@@ -88,19 +79,29 @@ class AgregarLeituras extends Command
             $tabela = $tipo['tabela'];
             $prefixo = $tipo['prefixo'];
 
-            // Query otimizada para pegar apenas os não agregados
+            // Query otimizada: busca agregados + último valor em uma única query
             $sql = "
                 SELECT
-                    id_cliente,
-                    id_equipamento,
-                    DATE_FORMAT(timestamp, '{$formato}') AS periodo_inicio,
-                    AVG(corrente) AS media,
-                    MAX(corrente) AS maximo,
-                    MIN(corrente) AS minimo,
-                    COUNT(*) AS total
-                FROM {$tabela}
-                WHERE agregado = 0
-                GROUP BY id_cliente, id_equipamento, periodo_inicio
+                    t1.id_cliente,
+                    t1.id_equipamento,
+                    DATE_FORMAT(t1.timestamp, '{$formato}') AS periodo_inicio,
+                    AVG(t1.corrente) AS media,
+                    MAX(t1.corrente) AS maximo,
+                    MIN(t1.corrente) AS minimo,
+                    COUNT(*) AS total,
+                    (
+                        SELECT t2.corrente
+                        FROM {$tabela} t2
+                        WHERE t2.id_cliente = t1.id_cliente
+                        AND t2.id_equipamento = t1.id_equipamento
+                        AND t2.agregado = 0
+                        AND DATE_FORMAT(t2.timestamp, '{$formato}') = DATE_FORMAT(t1.timestamp, '{$formato}')
+                        ORDER BY t2.timestamp DESC
+                        LIMIT 1
+                    ) AS ultima
+                FROM {$tabela} t1
+                WHERE t1.agregado = 0
+                GROUP BY t1.id_cliente, t1.id_equipamento, periodo_inicio
             ";
 
             $leituras = DB::select($sql);
@@ -109,17 +110,7 @@ class AgregarLeituras extends Command
                 continue;
             }
 
-            $this->upsertLote($leituras, $periodo, function($dado, $existente) use ($prefixo, $tabela, $periodo) {
-                // OTIMIZAÇÃO: Usar BETWEEN permite uso de índice no timestamp, evitando lentidão
-                $fimPeriodo = $this->getFimPeriodo($dado->periodo_inicio, $periodo);
-                
-                $ultima = DB::selectOne("
-                    SELECT corrente FROM {$tabela} 
-                    WHERE id_cliente = ? AND id_equipamento = ? 
-                    AND timestamp BETWEEN ? AND ?
-                    ORDER BY timestamp DESC LIMIT 1
-                ", [$dado->id_cliente, $dado->id_equipamento, $dado->periodo_inicio, $fimPeriodo]);
-                
+            $this->upsertLote($leituras, $periodo, function($dado, $existente) use ($prefixo) {
                 $media = $dado->media;
                 $max   = $dado->maximo;
                 $min   = $dado->minimo;
@@ -131,9 +122,9 @@ class AgregarLeituras extends Command
                     $colMin   = "corrente_{$prefixo}_min";
 
                     $media = $this->calcularMediaPonderada(
-                        $existente->$colMedia, 
-                        $existente->registros_contagem, 
-                        $dado->media, 
+                        $existente->$colMedia,
+                        $existente->registros_contagem,
+                        $dado->media,
                         $dado->total
                     );
                     $max = max($existente->$colMax, $dado->maximo);
@@ -144,10 +135,10 @@ class AgregarLeituras extends Command
                     "corrente_{$prefixo}_media" => $media,
                     "corrente_{$prefixo}_max" => $max,
                     "corrente_{$prefixo}_min" => $min,
-                    "corrente_{$prefixo}_ultima" => $ultima->corrente ?? null,
+                    "corrente_{$prefixo}_ultima" => $dado->ultima ?? null,
                 ];
             });
-            
+
             $this->info("  ✓ {$tabela} processada.");
         }
     }
@@ -159,31 +150,31 @@ class AgregarLeituras extends Command
 
         $leituras = DB::select("
             SELECT
-                id_cliente,
-                id_equipamento,
-                DATE_FORMAT(timestamp, '{$formato}') AS periodo_inicio,
-                AVG({$coluna}) AS media,
-                MAX({$coluna}) AS maximo,
-                MIN({$coluna}) AS minimo,
-                COUNT(*) AS total
-            FROM {$tabela}
-            WHERE agregado = 0
-            GROUP BY id_cliente, id_equipamento, periodo_inicio
+                t1.id_cliente,
+                t1.id_equipamento,
+                DATE_FORMAT(t1.timestamp, '{$formato}') AS periodo_inicio,
+                AVG(t1.{$coluna}) AS media,
+                MAX(t1.{$coluna}) AS maximo,
+                MIN(t1.{$coluna}) AS minimo,
+                COUNT(*) AS total,
+                (
+                    SELECT t2.{$coluna}
+                    FROM {$tabela} t2
+                    WHERE t2.id_cliente = t1.id_cliente
+                    AND t2.id_equipamento = t1.id_equipamento
+                    AND t2.agregado = 0
+                    AND DATE_FORMAT(t2.timestamp, '{$formato}') = DATE_FORMAT(t1.timestamp, '{$formato}')
+                    ORDER BY t2.timestamp DESC
+                    LIMIT 1
+                ) AS ultima
+            FROM {$tabela} t1
+            WHERE t1.agregado = 0
+            GROUP BY t1.id_cliente, t1.id_equipamento, periodo_inicio
         ");
 
         if (empty($leituras)) return;
 
-        $this->upsertLote($leituras, $periodo, function($dado, $existente) use ($tabela, $coluna, $periodo) {
-            // OTIMIZAÇÃO: Usar BETWEEN
-            $fimPeriodo = $this->getFimPeriodo($dado->periodo_inicio, $periodo);
-
-            $ultima = DB::selectOne("
-                SELECT {$coluna} FROM {$tabela} 
-                WHERE id_cliente = ? AND id_equipamento = ? 
-                AND timestamp BETWEEN ? AND ?
-                ORDER BY timestamp DESC LIMIT 1
-            ", [$dado->id_cliente, $dado->id_equipamento, $dado->periodo_inicio, $fimPeriodo]);
-
+        $this->upsertLote($leituras, $periodo, function($dado, $existente) use ($coluna) {
             $media = $dado->media;
             $max   = $dado->maximo;
             $min   = $dado->minimo;
@@ -194,9 +185,9 @@ class AgregarLeituras extends Command
                 $colMin   = "{$coluna}_min";
 
                 $media = $this->calcularMediaPonderada(
-                    $existente->$colMedia, 
-                    $existente->registros_contagem, 
-                    $dado->media, 
+                    $existente->$colMedia,
+                    $existente->registros_contagem,
+                    $dado->media,
                     $dado->total
                 );
                 $max = max($existente->$colMax, $dado->maximo);
@@ -207,7 +198,7 @@ class AgregarLeituras extends Command
                 "{$coluna}_media" => $media,
                 "{$coluna}_max" => $max,
                 "{$coluna}_min" => $min,
-                "{$coluna}_ultima" => $ultima->{$coluna} ?? null,
+                "{$coluna}_ultima" => $dado->ultima ?? null,
             ];
         });
     }
@@ -219,39 +210,56 @@ class AgregarLeituras extends Command
 
         $leituras = DB::select("
             SELECT
-                id_cliente,
-                id_equipamento,
-                DATE_FORMAT(timestamp, '{$formato}') AS periodo_inicio,
-                AVG(tensao_r) as tr_avg, MAX(tensao_r) as tr_max, MIN(tensao_r) as tr_min,
-                AVG(tensao_s) as ts_avg, MAX(tensao_s) as ts_max, MIN(tensao_s) as ts_min,
-                AVG(tensao_t) as tt_avg, MAX(tensao_t) as tt_max, MIN(tensao_t) as tt_min,
-                AVG(corrente_r) as cr_avg, MAX(corrente_r) as cr_max, MIN(corrente_r) as cr_min,
-                AVG(corrente_s) as cs_avg, MAX(corrente_s) as cs_max, MIN(corrente_s) as cs_min,
-                AVG(corrente_t) as ct_avg, MAX(corrente_t) as ct_max, MIN(corrente_t) as ct_min,
-                AVG(potencia_ativa) as pa_avg, MAX(potencia_ativa) as pa_max, MIN(potencia_ativa) as pa_min,
-                AVG(potencia_reativa) as pr_avg, MAX(potencia_reativa) as pr_max, MIN(potencia_reativa) as pr_min,
-                AVG(potencia_aparente) as pap_avg, MAX(potencia_aparente) as pap_max, MIN(potencia_aparente) as pap_min,
-                AVG(fator_potencia) as fp_avg, MAX(fator_potencia) as fp_max, MIN(fator_potencia) as fp_min,
-                COUNT(*) AS total
-            FROM grandezas_eletricas
-            WHERE agregado = 0
-            GROUP BY id_cliente, id_equipamento, periodo_inicio
+                t1.id_cliente,
+                t1.id_equipamento,
+                DATE_FORMAT(t1.timestamp, '{$formato}') AS periodo_inicio,
+                AVG(t1.tensao_r) as tr_avg, MAX(t1.tensao_r) as tr_max, MIN(t1.tensao_r) as tr_min,
+                AVG(t1.tensao_s) as ts_avg, MAX(t1.tensao_s) as ts_max, MIN(t1.tensao_s) as ts_min,
+                AVG(t1.tensao_t) as tt_avg, MAX(t1.tensao_t) as tt_max, MIN(t1.tensao_t) as tt_min,
+                AVG(t1.corrente_r) as cr_avg, MAX(t1.corrente_r) as cr_max, MIN(t1.corrente_r) as cr_min,
+                AVG(t1.corrente_s) as cs_avg, MAX(t1.corrente_s) as cs_max, MIN(t1.corrente_s) as cs_min,
+                AVG(t1.corrente_t) as ct_avg, MAX(t1.corrente_t) as ct_max, MIN(t1.corrente_t) as ct_min,
+                AVG(t1.potencia_ativa) as pa_avg, MAX(t1.potencia_ativa) as pa_max, MIN(t1.potencia_ativa) as pa_min,
+                AVG(t1.potencia_reativa) as pr_avg, MAX(t1.potencia_reativa) as pr_max, MIN(t1.potencia_reativa) as pr_min,
+                AVG(t1.potencia_aparente) as pap_avg, MAX(t1.potencia_aparente) as pap_max, MIN(t1.potencia_aparente) as pap_min,
+                AVG(t1.fator_potencia) as fp_avg, MAX(t1.fator_potencia) as fp_max, MIN(t1.fator_potencia) as fp_min,
+                COUNT(*) AS total,
+                (
+                    SELECT CONCAT_WS('|',
+                        t2.tensao_r, t2.tensao_s, t2.tensao_t,
+                        t2.corrente_r, t2.corrente_s, t2.corrente_t,
+                        t2.potencia_ativa, t2.potencia_reativa, t2.potencia_aparente, t2.fator_potencia
+                    )
+                    FROM grandezas_eletricas t2
+                    WHERE t2.id_cliente = t1.id_cliente
+                    AND t2.id_equipamento = t1.id_equipamento
+                    AND t2.agregado = 0
+                    AND DATE_FORMAT(t2.timestamp, '{$formato}') = DATE_FORMAT(t1.timestamp, '{$formato}')
+                    ORDER BY t2.timestamp DESC
+                    LIMIT 1
+                ) AS ultima_concatenada
+            FROM grandezas_eletricas t1
+            WHERE t1.agregado = 0
+            GROUP BY t1.id_cliente, t1.id_equipamento, periodo_inicio
         ");
 
         if (empty($leituras)) return;
 
-        $this->upsertLote($leituras, $periodo, function($dado, $existente) use ($periodo) {
-            // OTIMIZAÇÃO: Usar BETWEEN
-            $fimPeriodo = $this->getFimPeriodo($dado->periodo_inicio, $periodo);
-
-            $ultima = DB::selectOne("
-                SELECT tensao_r, tensao_s, tensao_t, corrente_r, corrente_s, corrente_t,
-                       potencia_ativa, potencia_reativa, potencia_aparente, fator_potencia
-                FROM grandezas_eletricas
-                WHERE id_cliente = ? AND id_equipamento = ? 
-                AND timestamp BETWEEN ? AND ?
-                ORDER BY timestamp DESC LIMIT 1
-            ", [$dado->id_cliente, $dado->id_equipamento, $dado->periodo_inicio, $fimPeriodo]);
+        $this->upsertLote($leituras, $periodo, function($dado, $existente) {
+            // Parse dos últimos valores concatenados
+            $ultimosValores = explode('|', $dado->ultima_concatenada ?? '');
+            $ultima = (object)[
+                'tensao_r' => $ultimosValores[0] ?? null,
+                'tensao_s' => $ultimosValores[1] ?? null,
+                'tensao_t' => $ultimosValores[2] ?? null,
+                'corrente_r' => $ultimosValores[3] ?? null,
+                'corrente_s' => $ultimosValores[4] ?? null,
+                'corrente_t' => $ultimosValores[5] ?? null,
+                'potencia_ativa' => $ultimosValores[6] ?? null,
+                'potencia_reativa' => $ultimosValores[7] ?? null,
+                'potencia_aparente' => $ultimosValores[8] ?? null,
+                'fator_potencia' => $ultimosValores[9] ?? null,
+            ];
 
             $campos = [
                 'tensao_r' => 'tr', 'tensao_s' => 'ts', 'tensao_t' => 'tt',

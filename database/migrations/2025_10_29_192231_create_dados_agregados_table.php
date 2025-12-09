@@ -102,6 +102,12 @@ return new class extends Migration
             $table->decimal('potencia_reativa_min', 10, 2)->nullable();
             $table->decimal('potencia_reativa_ultima', 10, 2)->nullable();
 
+            // Grandezas elétricas - Potência Aparente (kVA)
+            $table->decimal('potencia_aparente_media', 10, 2)->nullable();
+            $table->decimal('potencia_aparente_max', 10, 2)->nullable();
+            $table->decimal('potencia_aparente_min', 10, 2)->nullable();
+            $table->decimal('potencia_aparente_ultima', 10, 2)->nullable();
+
             // Grandezas elétricas - Fator de Potência (FP)
             $table->decimal('fator_potencia_media', 10, 4)->nullable();
             $table->decimal('fator_potencia_max', 10, 4)->nullable();
