@@ -393,7 +393,7 @@ foreach($leituras as $leitura) {
         @endif
 
         @if($colunasVisiveis['grandezas_eletricas'])
-            <div id="grandezas-cards" class="flex gap-4">
+            <div id="cards-grandezas" class="flex gap-4">
                 <div id="card-tensao" class="hidden">
                     <div class="flex gap-4 min-w-max">
                         @if(!empty($values['tensao_r_avg']))

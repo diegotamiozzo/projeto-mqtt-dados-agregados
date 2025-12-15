@@ -35,10 +35,12 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-neutral-900 bg-opacity-50 z-40 lg:hidden opacity-0 invisible transition-all duration-300"></div>
         <!-- Main Content -->
         <div class="flex-1 lg:ml-80">
+
             <!-- Floating Header -->
             <header id="floatingHeader" class="sticky top-0 z-30 bg-white border-b border-neutral-200 shadow-sm transition-transform duration-300">
                 <div class="px-4 lg:px-8 py-4">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+
                         <!-- Mobile Menu Button -->
                         <button onclick="toggleSidebar()" class="lg:hidden text-neutral-600 hover:text-primary-600 p-2 hover:bg-neutral-100 rounded-lg transition-smooth">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,23 +49,32 @@
                         </button>
 
                         <!-- Title -->
-                        <div class="flex items-center space-x-4">
-                            <img src="{{ asset('images/icone.png') }}" alt="Logo" class="h-12 w-auto">
-                                <div>
-                                <h1 class="text-xl lg:text-2xl font-bold text-neutral-900">Monitore seus Equipamentos em Tempo Real</h1>
-                                
-                                @if($ultimaAtualizacao)
-                                    <p class="text-sm text-neutral-500 mt-0.5">
-                                        Última atualização: <span class="font-medium">{{ \Carbon\Carbon::parse($ultimaAtualizacao)->format('d/m/Y H:i') }}</span>
-                                        <span class="mx-2">|</span>
-                                        Próxima em atualização em: <span id="countdown-timer" class="font-semibold text-primary-600">60</span>s
+                        <div class="text-left">
+                            <h1 class="text-xl lg:text-2xl font-bold text-neutral-900">
+                                Monitoramento em Tempo Real
+                            </h1>
+
+                            @if($ultimaAtualizacao)
+                                <div class="text-sm text-neutral-500 mt-0.5 space-y-0.5">
+                                    <p>
+                                        Último registro:
+                                        <span class="font-medium">
+                                            {{ \Carbon\Carbon::parse($ultimaAtualizacao)->format('d/m/Y H:i') }}
+                                        </span>
                                     </p>
-                                @endif
-                            </div>
+                                    <p>
+                                        Próximo registro em
+                                        <span id="countdown-timer" class="font-semibold text-primary-600">7</span>s
+                                    </p>
+                                </div>
+                            @endif
                         </div>
+
                     </div>
                 </div>
             </header>
+
+
 
             <!-- Main Content Area -->
             <main class="p-4 lg:p-8">
